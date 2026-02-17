@@ -9,7 +9,9 @@ import { ThemeToggle } from "@/components/theme-toggle";
 
 const navItems = [
   { href: "/", label: "홈" },
-  { href: "/docs/api", label: "API Docs" },
+  { href: "/convert", label: "변환하기" },
+  { href: "/pricing", label: "가격" },
+  { href: "/docs/getting-started", label: "API Docs" },
 ];
 
 export function Header() {

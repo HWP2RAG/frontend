@@ -2,7 +2,7 @@ import { http, HttpResponse } from "msw";
 import {
   mockUploadResponse,
   mockConversionStatus,
-  mockConversionResult,
+  mockConversionResults,
   mockUsageInfo,
   mockInitUploadResponse,
   mockCompleteUploadResponse,
@@ -34,8 +34,12 @@ export const handlers = [
     return HttpResponse.json(mockConversionStatus);
   }),
 
-  http.get("*/api/conversions/:id/download", () => {
-    return HttpResponse.json(mockConversionResult);
+  http.get("*/api/conversions/:id/download", ({ request }) => {
+    const url = new URL(request.url);
+    const format = url.searchParams.get("format") || "markdown";
+    const result =
+      mockConversionResults[format] || mockConversionResults.markdown;
+    return HttpResponse.json(result);
   }),
 
   http.get("*/api/usage", () => {

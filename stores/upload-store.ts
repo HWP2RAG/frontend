@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { validateFile } from "@/lib/validate-hwp";
 import { uploadChunked } from "@/lib/upload-chunked";
+import { useConversionStore } from "@/stores/conversion-store";
 import { toast } from "sonner";
 
 export type FileStatus = "pending" | "validating" | "uploading" | "success" | "error";
@@ -12,6 +13,7 @@ export interface UploadFile {
   progress: number;
   error?: string;
   uploadId?: string;
+  conversionId?: string;
 }
 
 const MAX_FILES = 3;
@@ -45,12 +47,14 @@ async function processFile(id: string, file: File) {
     const response = await uploadChunked(file, (progress) => {
       updateProgress(id, progress);
     });
+    const conversionId = response.uploadId;
     useUploadStore.getState().setFileStatus(id, "success");
     useUploadStore.setState((state) => ({
       files: state.files.map((f) =>
-        f.id === id ? { ...f, uploadId: response.uploadId } : f
+        f.id === id ? { ...f, uploadId: response.uploadId, conversionId } : f
       ),
     }));
+    useConversionStore.getState().startPolling(conversionId);
   } catch (err) {
     const message = err instanceof Error ? err.message : "업로드 실패";
     setFileStatus(id, "error", message);

@@ -1,21 +1,46 @@
-import { UploadZone } from "@/components/upload-zone";
-import { FileList } from "@/components/file-list";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { HeroSection } from "@/components/hero-section";
+import { FeatureSection } from "@/components/feature-section";
+import { BeforeAfterSection } from "@/components/before-after-section";
 
 export default function Home() {
   return (
-    <main className="flex flex-col items-center justify-center p-8 flex-1">
-      <div className="w-full max-w-xl">
-        <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold tracking-tight mb-2">
-            HWP 문서를 <span className="text-primary">RAG</span>에 최적화
-          </h1>
-          <p className="text-muted">
-            HWP 파일을 업로드하면 RAG 파이프라인에 적합한 형태로 변환해 드립니다
-          </p>
+    <main className="flex flex-col flex-1">
+      <HeroSection />
+      <FeatureSection />
+      <BeforeAfterSection />
+
+      {/* Social Proof */}
+      <section className="py-16 px-4">
+        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
+          <div>
+            <div className="text-3xl font-bold text-primary">10,000+</div>
+            <div className="text-sm text-muted mt-1">문서 변환 완료</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-primary">99.9%</div>
+            <div className="text-sm text-muted mt-1">서비스 가동률</div>
+          </div>
+          <div>
+            <div className="text-3xl font-bold text-primary">&lt;3초</div>
+            <div className="text-sm text-muted mt-1">평균 변환 속도</div>
+          </div>
         </div>
-        <UploadZone />
-        <FileList />
-      </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-20 px-4 bg-primary-50/30 text-center">
+        <h2 className="text-2xl font-bold tracking-tight mb-3">
+          지금 무료로 시작하기
+        </h2>
+        <p className="text-muted mb-6 max-w-md mx-auto">
+          회원가입 없이, 하루 5회까지 무료로 HWP 문서를 변환하세요.
+        </p>
+        <Button asChild size="lg" className="bg-primary hover:bg-primary-dark text-white shadow-md">
+          <Link href="/convert">변환하기</Link>
+        </Button>
+      </section>
     </main>
   );
 }

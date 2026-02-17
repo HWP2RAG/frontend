@@ -10,7 +10,6 @@ export function UploadZone() {
   const dragCounterRef = useRef(0);
   const [isDragOver, setIsDragOver] = useState(false);
   const files = useUploadStore((s) => s.files);
-  const addFiles = useUploadStore((s) => s.addFiles);
   const hasPending = files.some((f) => f.status === "pending");
   const isCompact = files.length > 0;
 
