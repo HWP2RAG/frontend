@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HWPtoRAG Frontend
+
+[HWPtoRAG](https://hwptorag.site) 웹 변환기의 프론트엔드입니다.
+
+HWP 파일을 드래그앤드롭하면 Markdown, JSON, RAG-JSON 등 AI/RAG에 최적화된 포맷으로 변환합니다.
+
+## Tech Stack
+
+- **Framework:** Next.js 16 (App Router)
+- **UI:** React 19 + shadcn/ui + next-themes
+- **State:** Zustand 5
+- **Testing:** Vitest + @testing-library/react + MSW
+- **Language:** TypeScript (strict mode)
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+http://localhost:3000 에서 확인할 수 있습니다.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | 개발 서버 실행 |
+| `npm run build` | 프로덕션 빌드 |
+| `npm run test` | 테스트 (watch mode) |
+| `npm run test:run` | 테스트 일회 실행 |
+| `npm run lint` | ESLint |
+| `npm run types:generate` | OpenAPI → TypeScript 타입 생성 |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/                    # Next.js App Router 페이지
+├── convert/            # 변환 페이지 (/convert, /convert/[id])
+├── pricing/            # 가격 페이지
+└── docs/               # API 문서
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+components/
+├── layout/             # Header, Footer
+├── ui/                 # shadcn/ui 컴포넌트
+└── __tests__/          # 컴포넌트 테스트
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+stores/                 # Zustand 스토어 (upload, conversion, usage)
+lib/                    # 유틸리티 (HWP 검증, 청크 업로드, 마크다운 변환)
+mocks/                  # MSW 핸들러 및 fixture
+api/                    # OpenAPI 기반 API 클라이언트
+```
 
-## Deploy on Vercel
+## Development
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+MSW 기반 Mock API로 백엔드 독립 개발:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+# .env.local
+NEXT_PUBLIC_API_MODE=mock   # 개발 시
+NEXT_PUBLIC_API_MODE=real   # 프로덕션
+```
+
+## Links
+
+- [Website](https://hwptorag.site)
+- [Docs](https://hwptorag.site/docs/getting-started)
+- [Pricing](https://hwptorag.site/pricing)
