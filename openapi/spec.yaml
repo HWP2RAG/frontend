@@ -1,0 +1,423 @@
+openapi: '3.1.0'
+info:
+  title: HWPtoRAG API
+  version: 1.0.0
+  description: HWP file parsing and conversion API for RAG pipelines
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development (MSW mock)
+  - url: https://api.hwptorag.com
+    description: Production
+
+paths:
+  /api/upload:
+    post:
+      operationId: uploadFile
+      summary: Upload HWP file for conversion
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: HWP file to upload (max 100MB)
+      responses:
+        '200':
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadResponse'
+        '400':
+          description: Invalid file type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '413':
+          description: File too large (max 100MB)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '429':
+          description: Daily usage limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/conversions/{id}/status:
+    get:
+      operationId: getConversionStatus
+      summary: Poll conversion status
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conversion status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionStatus'
+        '404':
+          description: Conversion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/conversions/{id}/download:
+    get:
+      operationId: downloadConversion
+      summary: Download conversion result
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - markdown
+              - json
+              - plaintext
+              - rag-json
+            default: markdown
+      responses:
+        '200':
+          description: Conversion result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversionResult'
+        '404':
+          description: Conversion not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/upload/init:
+    post:
+      operationId: initUpload
+      summary: Initialize a chunked upload session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InitUploadRequest'
+      responses:
+        '201':
+          description: Upload session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InitUploadResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/upload/{uploadId}/chunk:
+    post:
+      operationId: uploadChunk
+      summary: Upload a single chunk
+      parameters:
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - chunk
+                - chunkIndex
+                - totalChunks
+              properties:
+                chunk:
+                  type: string
+                  format: binary
+                chunkIndex:
+                  type: integer
+                totalChunks:
+                  type: integer
+      responses:
+        '200':
+          description: Chunk received
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChunkUploadResponse'
+        '400':
+          description: Invalid chunk
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/upload/{uploadId}/complete:
+    post:
+      operationId: completeUpload
+      summary: Finalize chunked upload
+      parameters:
+        - name: uploadId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Upload completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompleteUploadResponse'
+        '400':
+          description: Upload incomplete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/usage:
+    get:
+      operationId: getUsage
+      summary: Get daily usage info
+      responses:
+        '200':
+          description: Usage information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsageInfo'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    UploadResponse:
+      type: object
+      required:
+        - id
+        - status
+        - filename
+        - createdAt
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum:
+            - uploaded
+        filename:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ConversionStatus:
+      type: object
+      required:
+        - id
+        - status
+        - progress
+        - stages
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum:
+            - uploaded
+            - parsing
+            - converting
+            - completed
+            - failed
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        stages:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConversionStage'
+        error:
+          type: string
+
+    ConversionStage:
+      type: object
+      required:
+        - name
+        - status
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum:
+            - pending
+            - in_progress
+            - completed
+            - failed
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+
+    ConversionResult:
+      type: object
+      required:
+        - content
+        - format
+        - metadata
+      properties:
+        content:
+          type: string
+        format:
+          type: string
+          enum:
+            - markdown
+            - json
+            - plaintext
+            - rag-json
+        metadata:
+          type: object
+          required:
+            - title
+            - pageCount
+            - wordCount
+          properties:
+            title:
+              type: string
+            pageCount:
+              type: integer
+            wordCount:
+              type: integer
+
+    UsageInfo:
+      type: object
+      required:
+        - used
+        - limit
+        - resetAt
+      properties:
+        used:
+          type: integer
+        limit:
+          type: integer
+        resetAt:
+          type: string
+          format: date-time
+
+    InitUploadRequest:
+      type: object
+      required:
+        - filename
+        - fileSize
+        - totalChunks
+      properties:
+        filename:
+          type: string
+        fileSize:
+          type: number
+        totalChunks:
+          type: integer
+
+    InitUploadResponse:
+      type: object
+      required:
+        - uploadId
+        - chunkSize
+      properties:
+        uploadId:
+          type: string
+        chunkSize:
+          type: integer
+
+    ChunkUploadResponse:
+      type: object
+      required:
+        - chunkIndex
+        - received
+      properties:
+        chunkIndex:
+          type: integer
+        received:
+          type: boolean
+
+    CompleteUploadResponse:
+      type: object
+      required:
+        - uploadId
+        - filename
+        - status
+      properties:
+        uploadId:
+          type: string
+        filename:
+          type: string
+        status:
+          type: string
+          enum:
+            - uploaded
+
+    ErrorResponse:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
