@@ -3,11 +3,21 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { LoginButton } from "@/components/login-button";
 import { useAuthStore } from "@/stores/auth-store";
 
+function toBase64(str: string) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+const FAKE_JWT = [
+  toBase64(JSON.stringify({ alg: "RS256" })),
+  toBase64(JSON.stringify({ sub: "123", email: "test@example.com", name: "홍길동", picture: "https://example.com/photo.jpg" })),
+  "sig",
+].join(".");
+
 vi.mock("@react-oauth/google", () => ({
   GoogleLogin: ({ onSuccess }: { onSuccess: (res: { credential: string }) => void }) => (
     <button
       data-testid="google-login-btn"
-      onClick={() => onSuccess({ credential: "mock-credential" })}
+      onClick={() => onSuccess({ credential: FAKE_JWT })}
     >
       Google 로그인
     </button>
@@ -35,7 +45,7 @@ describe("LoginButton", () => {
   it("shows user name and logout button when logged in", async () => {
     useAuthStore.setState({
       user: {
-        id: "user-001",
+        id: "123",
         email: "test@example.com",
         name: "홍길동",
         picture: "https://example.com/photo.jpg",
@@ -61,16 +71,13 @@ describe("LoginButton", () => {
 
     await waitFor(() => {
       expect(useAuthStore.getState().isLoggedIn).toBe(true);
+      expect(useAuthStore.getState().user?.name).toBe("홍길동");
     });
   });
 
   it("calls logout when logout button is clicked", async () => {
     useAuthStore.setState({
-      user: {
-        id: "user-001",
-        email: "test@example.com",
-        name: "홍길동",
-      },
+      user: { id: "123", email: "test@example.com", name: "홍길동" },
       token: "mock-token",
       isLoggedIn: true,
       hydrated: true,

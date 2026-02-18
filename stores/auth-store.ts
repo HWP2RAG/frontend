@@ -1,9 +1,7 @@
 import { create } from "zustand";
-import { API_BASE_URL } from "@/lib/env";
 import type { components } from "@/api/types";
 
 type AuthUser = components["schemas"]["AuthUser"];
-type AuthResponse = components["schemas"]["AuthResponse"];
 
 const STORAGE_KEY = "auth-storage";
 
@@ -13,15 +11,31 @@ interface AuthStore {
   isLoggedIn: boolean;
   hydrated: boolean;
   hydrate: () => void;
-  login: (credential: string) => Promise<void>;
+  login: (credential: string) => void;
   logout: () => void;
+}
+
+function decodeGoogleJwt(credential: string): AuthUser | null {
+  try {
+    const parts = credential.split(".");
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(decodeURIComponent(escape(atob(parts[1]))));
+    return {
+      id: payload.sub,
+      email: payload.email,
+      name: payload.name,
+      picture: payload.picture,
+    };
+  } catch {
+    return null;
+  }
 }
 
 function saveToStorage(user: AuthUser, token: string) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ user, token }));
   } catch {
-    // localStorage unavailable (SSR, private browsing, etc.)
+    // localStorage unavailable
   }
 }
 
@@ -53,22 +67,12 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     }
   },
 
-  login: async (credential: string) => {
-    try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ credential }),
-      });
+  login: (credential: string) => {
+    const user = decodeGoogleJwt(credential);
+    if (!user) return;
 
-      if (!res.ok) throw new Error("Login failed");
-
-      const data: AuthResponse = await res.json();
-      set({ user: data.user, token: data.token, isLoggedIn: true });
-      saveToStorage(data.user, data.token);
-    } catch {
-      set({ user: null, token: null, isLoggedIn: false });
-    }
+    set({ user, token: credential, isLoggedIn: true });
+    saveToStorage(user, credential);
   },
 
   logout: () => {
