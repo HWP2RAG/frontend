@@ -1,13 +1,15 @@
 import Link from "next/link";
 
-const footerLinks = {
+type FooterLink = { href: string; label: string };
+
+const footerLinks: Record<string, FooterLink[]> = {
   service: [
     { href: "/convert", label: "변환하기" },
-    { href: "/pricing", label: "가격" },
+    // MVP hidden: { href: "/pricing", label: "가격" },
   ],
   developer: [
-    { href: "/docs/getting-started", label: "시작 가이드" },
-    { href: "/docs/api", label: "API 레퍼런스" },
+    // MVP hidden: { href: "/docs/getting-started", label: "시작 가이드" },
+    // MVP hidden: { href: "/docs/api", label: "API 레퍼런스" },
   ],
   company: [
     { href: "https://github.com/HWP2RAG", label: "GitHub" },
@@ -52,18 +54,20 @@ export function Footer() {
           </div>
 
           {/* Developer */}
-          <div>
-            <h4 className="text-sm font-semibold mb-3">개발자</h4>
-            <ul className="space-y-2">
-              {footerLinks.developer.map((link) => (
-                <li key={link.href}>
-                  <Link href={link.href} className="text-sm text-muted hover:text-primary transition-colors">
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          {footerLinks.developer.length > 0 && (
+            <div>
+              <h4 className="text-sm font-semibold mb-3">개발자</h4>
+              <ul className="space-y-2">
+                {footerLinks.developer.map((link) => (
+                  <li key={link.href}>
+                    <Link href={link.href} className="text-sm text-muted hover:text-primary transition-colors">
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Company */}
           <div>

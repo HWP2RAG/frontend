@@ -11,8 +11,9 @@ import { LoginButton } from "@/components/login-button";
 const navItems = [
   { href: "/", label: "홈" },
   { href: "/convert", label: "변환하기" },
-  { href: "/pricing", label: "가격" },
-  { href: "/docs/getting-started", label: "API Docs" },
+  // MVP hidden — unhide when ready:
+  // { href: "/pricing", label: "가격" },
+  // { href: "/docs/getting-started", label: "API Docs" },
 ];
 
 export function Header() {

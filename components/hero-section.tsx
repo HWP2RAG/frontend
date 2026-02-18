@@ -20,9 +20,11 @@ export function HeroSection() {
         <Button asChild size="lg" className="bg-primary hover:bg-primary-dark text-white shadow-md">
           <Link href="/convert">지금 변환하기</Link>
         </Button>
+        {/* MVP hidden: API 문서 보기 버튼
         <Button asChild variant="outline" size="lg">
           <Link href="/docs/getting-started">API 문서 보기</Link>
         </Button>
+        */}
       </div>
 
       {/* Hero Demo */}

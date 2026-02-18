@@ -16,18 +16,22 @@ vi.mock("@react-oauth/google", () => ({
 }));
 
 describe("LoginButton", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     useAuthStore.getState().logout();
     localStorage.clear();
+    // Ensure persist hydration is complete before each test
+    await useAuthStore.persist.rehydrate();
   });
 
-  it("shows Google login button when not logged in", () => {
+  it("shows Google login button when not logged in", async () => {
     render(<LoginButton />);
-    expect(screen.getByTestId("google-login-btn")).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByTestId("google-login-btn")).toBeTruthy();
+    });
     expect(screen.getByText("Google 로그인")).toBeTruthy();
   });
 
-  it("shows user name and logout button when logged in", () => {
+  it("shows user name and logout button when logged in", async () => {
     useAuthStore.setState({
       user: {
         id: "user-001",
@@ -40,12 +44,17 @@ describe("LoginButton", () => {
     });
 
     render(<LoginButton />);
-    expect(screen.getByText("홍길동")).toBeTruthy();
+    await waitFor(() => {
+      expect(screen.getByText("홍길동")).toBeTruthy();
+    });
     expect(screen.getByRole("button", { name: "로그아웃" })).toBeTruthy();
   });
 
   it("calls login on Google login success", async () => {
     render(<LoginButton />);
+    await waitFor(() => {
+      expect(screen.getByTestId("google-login-btn")).toBeTruthy();
+    });
     fireEvent.click(screen.getByTestId("google-login-btn"));
 
     await waitFor(() => {
@@ -53,7 +62,7 @@ describe("LoginButton", () => {
     });
   });
 
-  it("calls logout when logout button is clicked", () => {
+  it("calls logout when logout button is clicked", async () => {
     useAuthStore.setState({
       user: {
         id: "user-001",
@@ -65,6 +74,9 @@ describe("LoginButton", () => {
     });
 
     render(<LoginButton />);
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: "로그아웃" })).toBeTruthy();
+    });
     fireEvent.click(screen.getByRole("button", { name: "로그아웃" }));
 
     expect(useAuthStore.getState().isLoggedIn).toBe(false);
