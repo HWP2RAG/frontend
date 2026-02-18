@@ -5,11 +5,15 @@ import { useUsageStore } from "@/stores/usage-store";
 import { useAuthStore } from "@/stores/auth-store";
 
 describe("UsageIndicator", () => {
-  beforeEach(async () => {
+  beforeEach(() => {
     useUsageStore.getState().reset();
-    useAuthStore.getState().logout();
     localStorage.clear();
-    await useAuthStore.persist.rehydrate();
+    useAuthStore.setState({
+      user: null,
+      token: null,
+      isLoggedIn: false,
+      hydrated: true,
+    });
   });
 
   it("renders usage count", async () => {
@@ -19,7 +23,7 @@ describe("UsageIndicator", () => {
     });
   });
 
-  it("shows warning when limit is reached", async () => {
+  it("shows warning when limit is reached", () => {
     useUsageStore.setState({ used: 5, limit: 5 });
     render(<UsageIndicator />);
     expect(screen.getByText("일일 사용 한도에 도달했습니다")).toBeTruthy();
@@ -43,6 +47,7 @@ describe("UsageIndicator", () => {
       user: { id: "user-001", email: "test@example.com", name: "홍길동" },
       token: "mock-token",
       isLoggedIn: true,
+      hydrated: true,
     });
 
     render(<UsageIndicator />);

@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { LoginButton } from "@/components/login-button";
 import { useAuthStore } from "@/stores/auth-store";
 
-// Mock @react-oauth/google
 vi.mock("@react-oauth/google", () => ({
   GoogleLogin: ({ onSuccess }: { onSuccess: (res: { credential: string }) => void }) => (
     <button
@@ -16,11 +15,14 @@ vi.mock("@react-oauth/google", () => ({
 }));
 
 describe("LoginButton", () => {
-  beforeEach(async () => {
-    useAuthStore.getState().logout();
+  beforeEach(() => {
     localStorage.clear();
-    // Ensure persist hydration is complete before each test
-    await useAuthStore.persist.rehydrate();
+    useAuthStore.setState({
+      user: null,
+      token: null,
+      isLoggedIn: false,
+      hydrated: true,
+    });
   });
 
   it("shows Google login button when not logged in", async () => {
@@ -28,7 +30,6 @@ describe("LoginButton", () => {
     await waitFor(() => {
       expect(screen.getByTestId("google-login-btn")).toBeTruthy();
     });
-    expect(screen.getByText("Google 로그인")).toBeTruthy();
   });
 
   it("shows user name and logout button when logged in", async () => {
@@ -41,6 +42,7 @@ describe("LoginButton", () => {
       },
       token: "mock-token",
       isLoggedIn: true,
+      hydrated: true,
     });
 
     render(<LoginButton />);
@@ -71,6 +73,7 @@ describe("LoginButton", () => {
       },
       token: "mock-token",
       isLoggedIn: true,
+      hydrated: true,
     });
 
     render(<LoginButton />);

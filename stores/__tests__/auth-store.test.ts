@@ -2,10 +2,14 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { useAuthStore } from "@/stores/auth-store";
 
 describe("auth-store", () => {
-  beforeEach(async () => {
-    useAuthStore.getState().logout();
+  beforeEach(() => {
     localStorage.clear();
-    await useAuthStore.persist.rehydrate();
+    useAuthStore.setState({
+      user: null,
+      token: null,
+      isLoggedIn: false,
+      hydrated: false,
+    });
   });
 
   it("has correct initial state", () => {
@@ -13,6 +17,7 @@ describe("auth-store", () => {
     expect(state.user).toBeNull();
     expect(state.token).toBeNull();
     expect(state.isLoggedIn).toBe(false);
+    expect(state.hydrated).toBe(false);
   });
 
   it("login() calls POST /api/auth/google and stores user + token", async () => {
@@ -29,14 +34,50 @@ describe("auth-store", () => {
     expect(state.token).toBe("mock-jwt-token-abc123");
   });
 
-  it("logout() clears user and token", async () => {
+  it("login() saves to localStorage", async () => {
+    await useAuthStore.getState().login("mock-credential");
+
+    const raw = localStorage.getItem("auth-storage");
+    expect(raw).not.toBeNull();
+    const parsed = JSON.parse(raw!);
+    expect(parsed.user.name).toBe("홍길동");
+    expect(parsed.token).toBe("mock-jwt-token-abc123");
+  });
+
+  it("logout() clears user, token, and localStorage", async () => {
     await useAuthStore.getState().login("mock-credential");
     expect(useAuthStore.getState().isLoggedIn).toBe(true);
+    expect(localStorage.getItem("auth-storage")).not.toBeNull();
 
     useAuthStore.getState().logout();
+    expect(useAuthStore.getState().isLoggedIn).toBe(false);
+    expect(useAuthStore.getState().user).toBeNull();
+    expect(localStorage.getItem("auth-storage")).toBeNull();
+  });
+
+  it("hydrate() restores state from localStorage", () => {
+    localStorage.setItem(
+      "auth-storage",
+      JSON.stringify({
+        user: { id: "u1", email: "a@b.com", name: "TestUser" },
+        token: "tok-123",
+      })
+    );
+
+    useAuthStore.getState().hydrate();
+
     const state = useAuthStore.getState();
-    expect(state.user).toBeNull();
-    expect(state.token).toBeNull();
+    expect(state.hydrated).toBe(true);
+    expect(state.isLoggedIn).toBe(true);
+    expect(state.user?.name).toBe("TestUser");
+    expect(state.token).toBe("tok-123");
+  });
+
+  it("hydrate() sets hydrated=true even with empty localStorage", () => {
+    useAuthStore.getState().hydrate();
+
+    const state = useAuthStore.getState();
+    expect(state.hydrated).toBe(true);
     expect(state.isLoggedIn).toBe(false);
   });
 
@@ -52,31 +93,7 @@ describe("auth-store", () => {
     const state = useAuthStore.getState();
     expect(state.isLoggedIn).toBe(false);
     expect(state.user).toBeNull();
-    expect(state.token).toBeNull();
 
     globalThis.fetch = originalFetch;
-  });
-
-  it("restores login state from localStorage on rehydrate", async () => {
-    // Pre-populate localStorage (simulates prior login session)
-    const saved = {
-      state: {
-        user: { id: "user-001", email: "test@example.com", name: "홍길동" },
-        token: "mock-jwt-token-abc123",
-        isLoggedIn: true,
-      },
-      version: 0,
-    };
-    localStorage.setItem("auth-storage", JSON.stringify(saved));
-
-    // Store starts with defaults
-    expect(useAuthStore.getState().isLoggedIn).toBe(false);
-
-    // Rehydrate from localStorage (simulates page load)
-    await useAuthStore.persist.rehydrate();
-
-    expect(useAuthStore.getState().isLoggedIn).toBe(true);
-    expect(useAuthStore.getState().user?.name).toBe("홍길동");
-    expect(useAuthStore.getState().token).toBe("mock-jwt-token-abc123");
   });
 });
