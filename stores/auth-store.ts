@@ -48,6 +48,7 @@ export const useAuthStore = create<AuthStore>()(
     }),
     {
       name: "auth-storage",
+      skipHydration: true,
       partialize: (state) => ({
         user: state.user,
         token: state.token,

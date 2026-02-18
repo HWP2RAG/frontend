@@ -1,32 +1,18 @@
 "use client";
 
-import { useEffect, useState, useSyncExternalStore } from "react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuthStore } from "@/stores/auth-store";
+import { useAuthHydration } from "@/hooks/use-auth-hydration";
 import { Button } from "@/components/ui/button";
-
-function useHasHydrated() {
-  return useSyncExternalStore(
-    (cb) => {
-      const unsub = useAuthStore.persist.onFinishHydration(cb);
-      return unsub;
-    },
-    () => useAuthStore.persist.hasHydrated(),
-    () => false
-  );
-}
 
 export function LoginButton() {
   const { user, isLoggedIn, login, logout } = useAuthStore();
   const { resolvedTheme } = useTheme();
-  const hasHydrated = useHasHydrated();
-  const [mounted, setMounted] = useState(false);
+  const hydrated = useAuthHydration();
 
-  useEffect(() => setMounted(true), []);
-
-  if (!mounted || !hasHydrated) {
+  if (!hydrated) {
     return <div className="h-10 w-24" />;
   }
 
