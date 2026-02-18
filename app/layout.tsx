@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import { GoogleOAuthWrapper } from "@/components/google-oauth-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,11 +34,13 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
       >
         <ThemeProvider>
-          <MSWProvider>
-            <Header />
-            <div className="flex-1">{children}</div>
-            <Footer />
-          </MSWProvider>
+          <GoogleOAuthWrapper>
+            <MSWProvider>
+              <Header />
+              <div className="flex-1">{children}</div>
+              <Footer />
+            </MSWProvider>
+          </GoogleOAuthWrapper>
           <Toaster />
         </ThemeProvider>
       </body>

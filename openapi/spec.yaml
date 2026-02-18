@@ -239,6 +239,36 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/auth/google:
+    post:
+      operationId: googleLogin
+      summary: Authenticate with Google OAuth credential
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - credential
+              properties:
+                credential:
+                  type: string
+                  description: Google OAuth credential token
+      responses:
+        '200':
+          description: Authentication successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Invalid credential
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 components:
   schemas:
     UploadResponse:
@@ -408,6 +438,33 @@ components:
           type: string
           enum:
             - uploaded
+
+    AuthUser:
+      type: object
+      required:
+        - id
+        - email
+        - name
+      properties:
+        id:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        picture:
+          type: string
+
+    AuthResponse:
+      type: object
+      required:
+        - user
+        - token
+      properties:
+        user:
+          $ref: '#/components/schemas/AuthUser'
+        token:
+          type: string
 
     ErrorResponse:
       type: object

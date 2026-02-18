@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { API_BASE_URL } from "@/lib/env";
+import { useAuthStore } from "@/stores/auth-store";
 import type { components } from "@/api/types";
 
 type UsageInfo = components["schemas"]["UsageInfo"];
@@ -22,7 +23,13 @@ export const useUsageStore = create<UsageStore>()((set) => ({
   fetchUsage: async () => {
     set({ loading: true });
     try {
-      const res = await fetch(`${API_BASE_URL}/api/usage`);
+      const headers: Record<string, string> = {};
+      const token = useAuthStore.getState().token;
+      if (token) {
+        headers["Authorization"] = `Bearer ${token}`;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/usage`, { headers });
       if (!res.ok) throw new Error("Failed to fetch usage");
 
       const data: UsageInfo = await res.json();

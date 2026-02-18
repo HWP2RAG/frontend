@@ -161,6 +161,24 @@ export const mockUsageInfo: Schemas["UsageInfo"] = {
   resetAt: "2026-02-01T00:00:00Z",
 };
 
+export const mockUsageInfoLoggedIn: Schemas["UsageInfo"] = {
+  used: 3,
+  limit: 10,
+  resetAt: "2026-02-01T00:00:00Z",
+};
+
+export const mockUser: Schemas["AuthUser"] = {
+  id: "user-001",
+  email: "test@example.com",
+  name: "홍길동",
+  picture: "https://lh3.googleusercontent.com/a/default-user",
+};
+
+export const mockAuthResponse: Schemas["AuthResponse"] = {
+  user: mockUser,
+  token: "mock-jwt-token-abc123",
+};
+
 export const mockInitUploadResponse: Schemas["InitUploadResponse"] = {
   uploadId: "upload-abc-123",
   chunkSize: 5242880,

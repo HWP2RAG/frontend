@@ -6,6 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { LoginButton } from "@/components/login-button";
 
 const navItems = [
   { href: "/", label: "홈" },
@@ -47,7 +48,8 @@ export function Header() {
               <Link href={item.href}>{item.label}</Link>
             </Button>
           ))}
-          <div className="ml-2 border-l border-border pl-2">
+          <div className="ml-2 border-l border-border pl-2 flex items-center gap-2">
+            <LoginButton />
             <ThemeToggle />
           </div>
         </nav>
@@ -103,6 +105,9 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          <div className="px-3 py-2">
+            <LoginButton />
+          </div>
           <div className="flex items-center gap-2 px-3 py-2 text-sm text-muted">
             <span>테마</span>
             <ThemeToggle />

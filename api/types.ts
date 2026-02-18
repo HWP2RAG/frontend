@@ -123,6 +123,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/auth/google": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Authenticate with Google OAuth credential */
+        post: operations["googleLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -186,6 +203,16 @@ export interface components {
             filename: string;
             /** @enum {string} */
             status: "uploaded";
+        };
+        AuthUser: {
+            id: string;
+            email: string;
+            name: string;
+            picture?: string;
+        };
+        AuthResponse: {
+            user: components["schemas"]["AuthUser"];
+            token: string;
         };
         ErrorResponse: {
             code: string;
@@ -473,6 +500,42 @@ export interface operations {
             };
             /** @description Internal server error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    googleLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description Google OAuth credential token */
+                    credential: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Authentication successful */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthResponse"];
+                };
+            };
+            /** @description Invalid credential */
+            401: {
                 headers: {
                     [name: string]: unknown;
                 };
