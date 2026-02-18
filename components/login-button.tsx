@@ -37,19 +37,29 @@ export function LoginButton() {
     );
   }
 
+  const isDark = resolvedTheme === "dark";
+
   return (
-    <GoogleLogin
-      onSuccess={(credentialResponse) => {
-        if (credentialResponse.credential) {
-          login(credentialResponse.credential);
-        }
-      }}
-      onError={() => {
-        console.error("Google login failed");
-      }}
-      size="medium"
-      shape="pill"
-      theme={resolvedTheme === "dark" ? "filled_black" : "outline"}
-    />
+    <div
+      className={
+        isDark
+          ? "inline-flex overflow-hidden rounded-full bg-[#131314]"
+          : "inline-flex"
+      }
+    >
+      <GoogleLogin
+        onSuccess={(credentialResponse) => {
+          if (credentialResponse.credential) {
+            login(credentialResponse.credential);
+          }
+        }}
+        onError={() => {
+          console.error("Google login failed");
+        }}
+        size="medium"
+        shape="pill"
+        theme={isDark ? "filled_black" : "outline"}
+      />
+    </div>
   );
 }
