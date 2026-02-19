@@ -20,6 +20,7 @@ function createMockFile(
 
 const OLE2_MAGIC = new Uint8Array([0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]);
 const ZIP_MAGIC = new Uint8Array([0x50, 0x4b, 0x03, 0x04]);
+const XML_MAGIC = new Uint8Array([0x3c, 0x3f, 0x78, 0x6d, 0x6c]); // <?xml
 const PDF_MAGIC = new Uint8Array([0x25, 0x50, 0x44, 0x46]);
 
 describe("validateFileSize", () => {
@@ -53,6 +54,17 @@ describe("validateMagicBytes", () => {
     expect(await validateMagicBytes(file)).toEqual({ valid: true });
   });
 
+  it("returns valid for XML magic bytes (HWPML)", async () => {
+    const file = createMockFile(XML_MAGIC, "test.hwp");
+    expect(await validateMagicBytes(file)).toEqual({ valid: true });
+  });
+
+  it("returns valid for XML with UTF-8 BOM (HWPML)", async () => {
+    const bom = new Uint8Array([0xef, 0xbb, 0xbf, ...XML_MAGIC]);
+    const file = createMockFile(bom, "test.hwp");
+    expect(await validateMagicBytes(file)).toEqual({ valid: true });
+  });
+
   it("returns invalid for PDF magic bytes", async () => {
     const file = createMockFile(PDF_MAGIC, "test.hwp");
     expect(await validateMagicBytes(file)).toEqual({
@@ -78,6 +90,11 @@ describe("validateFileExtension", () => {
 
   it("returns valid for .hwpx", () => {
     const file = createMockFile(new Uint8Array(1), "document.hwpx");
+    expect(validateFileExtension(file)).toEqual({ valid: true });
+  });
+
+  it("returns valid for .hwpml", () => {
+    const file = createMockFile(new Uint8Array(1), "document.hwpml");
     expect(validateFileExtension(file)).toEqual({ valid: true });
   });
 
