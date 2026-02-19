@@ -1,28 +1,46 @@
 import { API_BASE_URL } from "@/lib/env";
+import { useAuthStore } from "@/stores/auth-store";
 
 const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB
 
-interface UploadResult {
+export interface UploadResult {
   uploadId: string;
   filename: string;
   status: string;
+  conversionId: string;
+}
+
+export interface UploadOptions {
+  onProgress?: (progress: number) => void;
+  signal?: AbortSignal;
+  outputFormat?: string;
 }
 
 export async function uploadChunked(
   file: File,
-  onProgress?: (progress: number) => void,
-  signal?: AbortSignal
+  options?: UploadOptions
 ): Promise<UploadResult> {
+  const { onProgress, signal, outputFormat } = options ?? {};
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
+
+  // Get auth token
+  const token = useAuthStore.getState().token;
+  const authHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (token) {
+    authHeaders["Authorization"] = `Bearer ${token}`;
+  }
 
   // 1. Init upload
   const initRes = await fetch(`${API_BASE_URL}/api/upload/init`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: authHeaders,
     body: JSON.stringify({
       filename: file.name,
       fileSize: file.size,
       totalChunks,
+      outputFormat: outputFormat ?? "markdown",
     }),
     signal,
   });

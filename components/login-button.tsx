@@ -48,9 +48,9 @@ export function LoginButton() {
       }
     >
       <GoogleLogin
-        onSuccess={(credentialResponse) => {
+        onSuccess={async (credentialResponse) => {
           if (credentialResponse.credential) {
-            login(credentialResponse.credential);
+            await login(credentialResponse.credential);
           }
         }}
         onError={() => {

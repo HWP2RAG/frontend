@@ -44,10 +44,11 @@ async function processFile(id: string, file: File) {
 
   setFileStatus(id, "uploading");
   try {
-    const response = await uploadChunked(file, (progress) => {
-      updateProgress(id, progress);
+    const response = await uploadChunked(file, {
+      onProgress: (p) => updateProgress(id, p),
+      outputFormat: "markdown",
     });
-    const conversionId = response.uploadId;
+    const conversionId = response.conversionId;
     useUploadStore.getState().setFileStatus(id, "success");
     useUploadStore.setState((state) => ({
       files: state.files.map((f) =>

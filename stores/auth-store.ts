@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type { components } from "@/api/types";
+import { API_BASE_URL } from "@/lib/env";
 
 type AuthUser = components["schemas"]["AuthUser"];
 
@@ -11,7 +12,7 @@ interface AuthStore {
   isLoggedIn: boolean;
   hydrated: boolean;
   hydrate: () => void;
-  login: (credential: string) => void;
+  login: (credential: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -67,12 +68,20 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     }
   },
 
-  login: (credential: string) => {
-    const user = decodeGoogleJwt(credential);
-    if (!user) return;
-
-    set({ user, token: credential, isLoggedIn: true });
-    saveToStorage(user, credential);
+  login: async (credential: string) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential }),
+      });
+      if (!res.ok) return;
+      const data: { user: AuthUser; token: string } = await res.json();
+      set({ user: data.user, token: data.token, isLoggedIn: true });
+      saveToStorage(data.user, data.token);
+    } catch {
+      // Network error — user stays logged out
+    }
   },
 
   logout: () => {

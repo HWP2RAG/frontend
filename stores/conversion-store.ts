@@ -20,7 +20,7 @@ interface ConversionStore {
   _timers: Record<string, ReturnType<typeof setInterval>>;
   startPolling: (id: string) => void;
   stopPolling: (id: string) => void;
-  fetchResult: (id: string, format: string) => Promise<void>;
+  fetchResult: (id: string, format?: string) => Promise<void>;
   reset: () => void;
 }
 
@@ -100,10 +100,10 @@ export const useConversionStore = create<ConversionStore>()((set, get) => ({
     }
   },
 
-  fetchResult: async (id, format) => {
+  fetchResult: async (id) => {
     try {
       const res = await fetch(
-        `${API_BASE_URL}/api/conversions/${id}/download?format=${format}`
+        `${API_BASE_URL}/api/conversions/${id}/download`
       );
       if (!res.ok) throw new Error("Download failed");
 
