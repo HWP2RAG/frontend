@@ -21,8 +21,8 @@ export default function ResultPage({ params }: ResultPageProps) {
   const fetchResult = useConversionStore((s) => s.fetchResult);
 
   useEffect(() => {
-    fetchResult(id, format);
-  }, [id, format, fetchResult]);
+    fetchResult(id);
+  }, [id, fetchResult]);
 
   const result = conversion?.result;
   const metadata = result?.metadata;

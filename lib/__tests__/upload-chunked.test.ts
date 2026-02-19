@@ -13,7 +13,7 @@ describe("uploadChunked", () => {
     });
     const onProgress = vi.fn();
 
-    const result = await uploadChunked(file, onProgress);
+    const result = await uploadChunked(file, { onProgress });
 
     // init call
     expect(fetchSpy).toHaveBeenCalledTimes(3);
@@ -28,6 +28,7 @@ describe("uploadChunked", () => {
     expect(onProgress).toHaveBeenCalledWith(100);
     expect(result.uploadId).toBe("upload-abc-123");
     expect(result.status).toBe("uploaded");
+    expect(result.conversionId).toBe("conv-001");
   });
 
   it("uploads multiple chunks for a larger file", async () => {
@@ -40,7 +41,7 @@ describe("uploadChunked", () => {
     });
     const onProgress = vi.fn();
 
-    await uploadChunked(file, onProgress);
+    await uploadChunked(file, { onProgress });
 
     // init + 2 chunks + complete = 4 calls
     expect(fetchSpy).toHaveBeenCalledTimes(4);
@@ -58,7 +59,36 @@ describe("uploadChunked", () => {
     const file = new File(["data"], "test.hwp");
 
     await expect(
-      uploadChunked(file, undefined, controller.signal)
+      uploadChunked(file, { signal: controller.signal })
     ).rejects.toThrow();
+  });
+
+  it("sends outputFormat in init request body", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const file = new File(["hello"], "test.hwp", {
+      type: "application/octet-stream",
+    });
+
+    await uploadChunked(file, { outputFormat: "json" });
+
+    // Verify init request contains outputFormat
+    const initCall = fetchSpy.mock.calls[0];
+    const initOptions = initCall[1] as RequestInit;
+    const body = JSON.parse(initOptions.body as string);
+    expect(body.outputFormat).toBe("json");
+  });
+
+  it("defaults outputFormat to markdown", async () => {
+    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    const file = new File(["hello"], "test.hwp", {
+      type: "application/octet-stream",
+    });
+
+    await uploadChunked(file);
+
+    const initCall = fetchSpy.mock.calls[0];
+    const initOptions = initCall[1] as RequestInit;
+    const body = JSON.parse(initOptions.body as string);
+    expect(body.outputFormat).toBe("markdown");
   });
 });

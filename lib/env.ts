@@ -1,6 +1,6 @@
 const API_BASE_URLS = {
   mock: "http://localhost:3000",
-  real: process.env.NEXT_PUBLIC_API_URL || "https://api.hwptorag.com",
+  real: process.env.NEXT_PUBLIC_API_URL || "https://hwptorag-server-production.up.railway.app",
 } as const;
 
 type ApiMode = keyof typeof API_BASE_URLS;

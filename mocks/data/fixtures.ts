@@ -188,4 +188,5 @@ export const mockCompleteUploadResponse: Schemas["CompleteUploadResponse"] = {
   uploadId: "upload-abc-123",
   filename: "document.hwp",
   status: "uploaded",
+  conversionId: "conv-001",
 };

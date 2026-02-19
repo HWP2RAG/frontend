@@ -7,7 +7,7 @@ info:
 servers:
   - url: http://localhost:3000/api
     description: Development (MSW mock)
-  - url: https://api.hwptorag.com
+  - url: https://hwptorag-server-production.up.railway.app
     description: Production
 
 paths:
@@ -400,6 +400,10 @@ components:
           type: number
         totalChunks:
           type: integer
+        outputFormat:
+          type: string
+          enum: [markdown, json, plaintext, rag-json]
+          default: markdown
 
     InitUploadResponse:
       type: object
@@ -429,6 +433,7 @@ components:
         - uploadId
         - filename
         - status
+        - conversionId
       properties:
         uploadId:
           type: string
@@ -438,6 +443,8 @@ components:
           type: string
           enum:
             - uploaded
+        conversionId:
+          type: string
 
     AuthUser:
       type: object

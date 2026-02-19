@@ -189,6 +189,11 @@ export interface components {
             filename: string;
             fileSize: number;
             totalChunks: number;
+            /**
+             * @default markdown
+             * @enum {string}
+             */
+            outputFormat: "markdown" | "json" | "plaintext" | "rag-json";
         };
         InitUploadResponse: {
             uploadId: string;
@@ -203,6 +208,7 @@ export interface components {
             filename: string;
             /** @enum {string} */
             status: "uploaded";
+            conversionId: string;
         };
         AuthUser: {
             id: string;

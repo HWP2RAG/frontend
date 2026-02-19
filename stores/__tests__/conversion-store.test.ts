@@ -60,7 +60,7 @@ describe("useConversionStore", () => {
     useConversionStore.getState().startPolling("conv-001");
     await vi.advanceTimersByTimeAsync(2100);
 
-    await useConversionStore.getState().fetchResult("conv-001", "markdown");
+    await useConversionStore.getState().fetchResult("conv-001");
 
     const conv = useConversionStore.getState().conversions["conv-001"];
     expect(conv.result).toBeDefined();

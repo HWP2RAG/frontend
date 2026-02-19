@@ -59,7 +59,10 @@ export const handlers = [
     try {
       const parts = body.credential.split(".");
       if (parts.length === 3) {
-        const payload = JSON.parse(atob(parts[1]));
+        // Use decodeURIComponent(escape()) for proper UTF-8 handling (Korean chars)
+        const payload = JSON.parse(
+          decodeURIComponent(escape(atob(parts[1])))
+        );
         return HttpResponse.json({
           user: {
             id: payload.sub || "user-001",
