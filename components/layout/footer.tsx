@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 type FooterLink = { href: string; label: string };
 
@@ -25,9 +26,7 @@ export function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-3">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white text-xs font-bold">
-                H
-              </div>
+              <Image src="/logo.png" alt="HWPtoRAG" width={28} height={28} />
               <span className="text-sm font-bold">
                 HWPto<span className="text-primary">RAG</span>
               </span>
