@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -24,9 +25,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-lg">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-dark text-white text-sm font-bold shadow-sm">
-            H
-          </div>
+          <Image src="/logo.png" alt="HWPtoRAG" width={32} height={32} priority />
           <span className="text-lg font-bold tracking-tight">
             HWPto<span className="text-primary">RAG</span>
           </span>
