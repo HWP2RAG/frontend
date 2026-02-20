@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { HeroDemo } from "@/components/hero-demo";
 
 export function HeroSection() {
   return (
@@ -28,33 +29,7 @@ export function HeroSection() {
       </div>
 
       {/* Hero Demo */}
-      <div className="mt-8 w-full max-w-2xl rounded-xl border border-border bg-surface p-6 shadow-sm">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-lg bg-primary-50 p-4 text-left">
-            <div className="text-xs text-muted mb-2 font-medium">INPUT: HWP</div>
-            <div className="space-y-2 text-sm">
-              <div className="h-4 w-3/4 rounded bg-primary/20" />
-              <div className="h-3 w-full rounded bg-primary/10" />
-              <div className="h-3 w-5/6 rounded bg-primary/10" />
-              <div className="h-3 w-full rounded bg-primary/10" />
-              <div className="mt-3 h-12 w-full rounded bg-primary/10" />
-            </div>
-          </div>
-          <div className="rounded-lg bg-surface border border-border p-4 text-left">
-            <div className="text-xs text-muted mb-2 font-medium">OUTPUT: Markdown</div>
-            <pre className="text-xs text-foreground/80 font-mono whitespace-pre-wrap">
-{`# 제목
-
-본문 텍스트가 **정확하게**
-변환됩니다.
-
-| 항목 | 값 |
-|------|-----|
-| A    | 100 |`}
-            </pre>
-          </div>
-        </div>
-      </div>
+      <HeroDemo />
     </section>
   );
 }

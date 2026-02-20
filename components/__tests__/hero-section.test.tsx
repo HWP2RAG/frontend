@@ -18,4 +18,16 @@ describe("HeroSection", () => {
     render(<HeroSection />);
     expect(screen.getByText("무료로 시작하기")).toBeTruthy();
   });
+
+  it("renders INPUT: HWP label in initial phase", () => {
+    render(<HeroSection />);
+    expect(screen.getByText("INPUT: HWP")).toBeTruthy();
+  });
+
+  it("renders demo container", () => {
+    render(<HeroSection />);
+    // The demo renders inside a bordered container
+    const container = document.querySelector(".rounded-xl.border");
+    expect(container).toBeTruthy();
+  });
 });
