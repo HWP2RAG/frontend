@@ -41,11 +41,11 @@ describe("UploadZone", () => {
       .addFiles([new File(["data"], "test.hwp")]);
 
     render(<UploadZone />);
-    expect(screen.getByText("업로드")).toBeTruthy();
+    expect(screen.getByText("변환하기")).toBeTruthy();
   });
 
   it("hides upload button when no pending files", () => {
     render(<UploadZone />);
-    expect(screen.queryByText("업로드")).toBeNull();
+    expect(screen.queryByText("변환하기")).toBeNull();
   });
 });

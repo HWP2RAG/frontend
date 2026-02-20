@@ -132,7 +132,7 @@ export function UploadZone() {
       </div>
       {hasPending && (
         <Button onClick={onUploadClick} className="w-full bg-primary hover:bg-primary-dark text-white shadow-sm">
-          업로드
+          변환하기
         </Button>
       )}
     </div>
