@@ -45,7 +45,10 @@ export async function uploadChunked(
     signal,
   });
 
-  if (!initRes.ok) throw new Error("Upload init failed");
+  if (!initRes.ok) {
+    const body = await initRes.text().catch(() => "");
+    throw new Error(`Upload init failed (${initRes.status}): ${body}`);
+  }
   const { uploadId } = await initRes.json();
 
   // 2. Upload chunks
@@ -59,6 +62,7 @@ export async function uploadChunked(
     const formData = new FormData();
     formData.append("chunk", chunk);
     formData.append("chunkIndex", String(i));
+    formData.append("totalChunks", String(totalChunks));
 
     // Use fetch for chunk upload (XHR progress not reliable in jsdom/SSR)
     const chunkRes = await fetch(
@@ -70,7 +74,10 @@ export async function uploadChunked(
       }
     );
 
-    if (!chunkRes.ok) throw new Error(`Chunk ${i} upload failed`);
+    if (!chunkRes.ok) {
+      const body = await chunkRes.text().catch(() => "");
+      throw new Error(`Chunk ${i} upload failed (${chunkRes.status}): ${body}`);
+    }
 
     // Report progress after each chunk
     const progress = Math.round(((i + 1) / totalChunks) * 100);
@@ -87,6 +94,9 @@ export async function uploadChunked(
     }
   );
 
-  if (!completeRes.ok) throw new Error("Upload complete failed");
+  if (!completeRes.ok) {
+    const body = await completeRes.text().catch(() => "");
+    throw new Error(`Upload complete failed (${completeRes.status}): ${body}`);
+  }
   return completeRes.json();
 }
