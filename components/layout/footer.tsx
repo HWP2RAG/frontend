@@ -6,6 +6,7 @@ type FooterLink = { href: string; label: string };
 const footerLinks: Record<string, FooterLink[]> = {
   service: [
     { href: "/convert", label: "변환하기" },
+    { href: "/about", label: "소개" },
     // MVP hidden: { href: "/pricing", label: "가격" },
   ],
   developer: [

@@ -12,6 +12,7 @@ import { LoginButton } from "@/components/login-button";
 const navItems = [
   { href: "/", label: "홈" },
   { href: "/convert", label: "변환하기" },
+  { href: "/about", label: "소개" },
   // MVP hidden — unhide when ready:
   // { href: "/pricing", label: "가격" },
   // { href: "/docs/getting-started", label: "API Docs" },
