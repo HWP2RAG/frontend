@@ -21,10 +21,12 @@ const MAX_FILES = 3;
 interface UploadStore {
   files: UploadFile[];
   lastError: string | null;
+  selectedFormat: string;
   addFiles: (files: File[]) => void;
   removeFile: (id: string) => void;
   updateProgress: (id: string, progress: number) => void;
   setFileStatus: (id: string, status: FileStatus, error?: string) => void;
+  setSelectedFormat: (format: string) => void;
   startUpload: () => void;
   retryFile: (id: string) => void;
   reset: () => void;
@@ -44,9 +46,10 @@ async function processFile(id: string, file: File) {
 
   setFileStatus(id, "uploading");
   try {
+    const { selectedFormat } = useUploadStore.getState();
     const response = await uploadChunked(file, {
       onProgress: (p) => updateProgress(id, p),
-      outputFormat: "markdown",
+      outputFormat: selectedFormat,
     });
     const conversionId = response.conversionId;
     useUploadStore.getState().setFileStatus(id, "success");
@@ -65,6 +68,7 @@ async function processFile(id: string, file: File) {
 export const useUploadStore = create<UploadStore>()((set) => ({
   files: [],
   lastError: null,
+  selectedFormat: "markdown",
 
   addFiles: (files) =>
     set((state) => {
@@ -97,6 +101,8 @@ export const useUploadStore = create<UploadStore>()((set) => ({
       ),
     })),
 
+  setSelectedFormat: (format) => set({ selectedFormat: format }),
+
   startUpload: () => {
     const { files } = useUploadStore.getState();
     const pending = files.filter((f) => f.status === "pending");
@@ -111,5 +117,5 @@ export const useUploadStore = create<UploadStore>()((set) => ({
     processFile(id, file.file);
   },
 
-  reset: () => set({ files: [], lastError: null }),
+  reset: () => set({ files: [], lastError: null, selectedFormat: "markdown" }),
 }));

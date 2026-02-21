@@ -5,11 +5,14 @@ import { UploadZone } from "@/components/upload-zone";
 import { FileList } from "@/components/file-list";
 import { UsageIndicator } from "@/components/usage-indicator";
 import { ConversionStatusCard } from "@/components/conversion-status-card";
+import { FormatSelector } from "@/components/format-selector";
 import { useUploadStore } from "@/stores/upload-store";
 import { useConversionStore } from "@/stores/conversion-store";
 
 export default function ConvertPage() {
   const files = useUploadStore((s) => s.files);
+  const selectedFormat = useUploadStore((s) => s.selectedFormat);
+  const setSelectedFormat = useUploadStore((s) => s.setSelectedFormat);
   const conversions = useConversionStore((s) => s.conversions);
 
   const completedFiles = files.filter((f) => f.status === "success" && f.conversionId);
@@ -34,6 +37,8 @@ export default function ConvertPage() {
             HWP 파일을 업로드하면 AI/RAG에 최적화된 형태로 변환합니다
           </p>
         </div>
+
+        <FormatSelector value={selectedFormat} onChange={setSelectedFormat} />
 
         <UsageIndicator />
 
