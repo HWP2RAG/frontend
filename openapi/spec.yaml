@@ -446,6 +446,8 @@ components:
             - json
             - plaintext
             - rag-json
+            - csv
+            - html
         metadata:
           type: object
           required:
@@ -490,7 +492,7 @@ components:
           type: integer
         outputFormat:
           type: string
-          enum: [markdown, json, plaintext, rag-json]
+          enum: [markdown, json, plaintext, rag-json, csv, html]
           default: markdown
 
     InitUploadResponse:
