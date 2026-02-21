@@ -52,8 +52,8 @@ describe("HistoryTable", () => {
 
   it("renders filenames in the table", () => {
     render(<HistoryTable />);
-    expect(screen.getByText("document1.hwp")).toBeInTheDocument();
-    expect(screen.getByText("document2.hwp")).toBeInTheDocument();
+    expect(screen.getByText("document1.hwp")).toBeTruthy();
+    expect(screen.getByText("document2.hwp")).toBeTruthy();
   });
 
   it("shows download button only for completed items", () => {
@@ -65,7 +65,7 @@ describe("HistoryTable", () => {
   it("shows empty state when no items", () => {
     useHistoryStore.setState({ items: [], totalCount: 0, totalPages: 0 });
     render(<HistoryTable />);
-    expect(screen.getByText(/변환 기록이 없습니다/)).toBeInTheDocument();
+    expect(screen.getByText(/변환 기록이 없습니다/)).toBeTruthy();
   });
 
   it("shows loading state", () => {
