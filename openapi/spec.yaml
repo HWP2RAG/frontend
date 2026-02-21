@@ -60,6 +60,50 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/conversions:
+    get:
+      operationId: getConversionHistory
+      summary: Get paginated conversion history for authenticated user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: pageSize
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - uploaded
+              - parsing
+              - converting
+              - completed
+              - failed
+      responses:
+        '200':
+          description: Paginated conversion history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/conversions/{id}/status:
     get:
       operationId: getConversionStatus
@@ -126,6 +170,50 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/conversions/{id}/download-url:
+    get:
+      operationId: getDownloadUrl
+      summary: Get presigned download URL for conversion result
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: source
+          in: query
+          required: false
+          schema:
+            type: string
+            description: Source context (e.g. "history" for 900s expiry)
+      responses:
+        '200':
+          description: Presigned download URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DownloadUrlResponse'
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Access denied (not owner)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Conversion not found
           content:
             application/json:
               schema:
@@ -471,6 +559,83 @@ components:
         user:
           $ref: '#/components/schemas/AuthUser'
         token:
+          type: string
+
+    HistoryItem:
+      type: object
+      required:
+        - id
+        - filename
+        - outputFormat
+        - status
+        - createdAt
+        - hasImages
+      properties:
+        id:
+          type: string
+        filename:
+          type: string
+        outputFormat:
+          type: string
+        status:
+          type: string
+          enum:
+            - uploaded
+            - parsing
+            - converting
+            - completed
+            - failed
+        fileSize:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        hasImages:
+          type: boolean
+
+    HistoryResponse:
+      type: object
+      required:
+        - items
+        - totalCount
+        - page
+        - pageSize
+        - totalPages
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/HistoryItem'
+        totalCount:
+          type: integer
+        page:
+          type: integer
+        pageSize:
+          type: integer
+        totalPages:
+          type: integer
+
+    DownloadUrlResponse:
+      type: object
+      required:
+        - downloadUrl
+        - expiresIn
+        - filename
+        - format
+      properties:
+        downloadUrl:
+          type: string
+        expiresIn:
+          type: integer
+          description: Seconds until URL expires (3600 or 900)
+        filename:
+          type: string
+        format:
           type: string
 
     ErrorResponse:

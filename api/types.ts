@@ -21,6 +21,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/conversions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get paginated conversion history for authenticated user */
+        get: operations["getConversionHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/conversions/{id}/status": {
         parameters: {
             query?: never;
@@ -47,6 +64,23 @@ export interface paths {
         };
         /** Download conversion result */
         get: operations["downloadConversion"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/conversions/{id}/download-url": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get presigned download URL for conversion result */
+        get: operations["getDownloadUrl"];
         put?: never;
         post?: never;
         delete?: never;
@@ -172,7 +206,7 @@ export interface components {
         ConversionResult: {
             content: string;
             /** @enum {string} */
-            format: "markdown" | "json" | "plaintext" | "rag-json" | "csv" | "html";
+            format: "markdown" | "json" | "plaintext" | "rag-json";
             metadata: {
                 title: string;
                 pageCount: number;
@@ -193,7 +227,7 @@ export interface components {
              * @default markdown
              * @enum {string}
              */
-            outputFormat: "markdown" | "json" | "plaintext" | "rag-json" | "csv" | "html";
+            outputFormat: "markdown" | "json" | "plaintext" | "rag-json";
         };
         InitUploadResponse: {
             uploadId: string;
@@ -219,6 +253,33 @@ export interface components {
         AuthResponse: {
             user: components["schemas"]["AuthUser"];
             token: string;
+        };
+        HistoryItem: {
+            id: string;
+            filename: string;
+            outputFormat: string;
+            /** @enum {string} */
+            status: "uploaded" | "parsing" | "converting" | "completed" | "failed";
+            fileSize?: number | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            completedAt?: string | null;
+            hasImages: boolean;
+        };
+        HistoryResponse: {
+            items: components["schemas"]["HistoryItem"][];
+            totalCount: number;
+            page: number;
+            pageSize: number;
+            totalPages: number;
+        };
+        DownloadUrlResponse: {
+            downloadUrl: string;
+            /** @description Seconds until URL expires (3600 or 900) */
+            expiresIn: number;
+            filename: string;
+            format: string;
         };
         ErrorResponse: {
             code: string;
@@ -300,6 +361,39 @@ export interface operations {
             };
         };
     };
+    getConversionHistory: {
+        parameters: {
+            query?: {
+                page?: number;
+                pageSize?: number;
+                status?: "uploaded" | "parsing" | "converting" | "completed" | "failed";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Paginated conversion history */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HistoryResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
     getConversionStatus: {
         parameters: {
             query?: never;
@@ -343,7 +437,7 @@ export interface operations {
     downloadConversion: {
         parameters: {
             query?: {
-                format?: "markdown" | "json" | "plaintext" | "rag-json" | "csv" | "html";
+                format?: "markdown" | "json" | "plaintext" | "rag-json";
             };
             header?: never;
             path: {
@@ -373,6 +467,57 @@ export interface operations {
             };
             /** @description Internal server error */
             500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getDownloadUrl: {
+        parameters: {
+            query?: {
+                source?: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Presigned download URL */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DownloadUrlResponse"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Access denied (not owner) */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description Conversion not found */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

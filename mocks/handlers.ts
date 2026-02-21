@@ -8,6 +8,8 @@ import {
   mockAuthResponse,
   mockInitUploadResponse,
   mockCompleteUploadResponse,
+  mockHistoryResponse,
+  mockDownloadUrlResponse,
 } from "./data/fixtures";
 
 export const handlers = [
@@ -30,6 +32,43 @@ export const handlers = [
 
   http.post("*/api/upload", () => {
     return HttpResponse.json(mockUploadResponse);
+  }),
+
+  // History list endpoint (must come BEFORE :id/* routes to avoid route shadowing)
+  http.get("*/api/conversions", ({ request }) => {
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader) {
+      return HttpResponse.json(
+        { code: "AUTH_REQUIRED", message: "로그인이 필요합니다." },
+        { status: 401 }
+      );
+    }
+    const url = new URL(request.url);
+    const status = url.searchParams.get("status");
+    if (status) {
+      const filtered = mockHistoryResponse.items.filter(
+        (item) => item.status === status
+      );
+      return HttpResponse.json({
+        ...mockHistoryResponse,
+        items: filtered,
+        totalCount: filtered.length,
+        totalPages: Math.ceil(filtered.length / 20),
+      });
+    }
+    return HttpResponse.json(mockHistoryResponse);
+  }),
+
+  // Download URL endpoint (must come BEFORE :id/status and :id/download)
+  http.get("*/api/conversions/:id/download-url", ({ request }) => {
+    const authHeader = request.headers.get("Authorization");
+    if (!authHeader) {
+      return HttpResponse.json(
+        { code: "AUTH_REQUIRED", message: "로그인이 필요합니다." },
+        { status: 401 }
+      );
+    }
+    return HttpResponse.json(mockDownloadUrlResponse);
   }),
 
   http.get("*/api/conversions/:id/status", () => {

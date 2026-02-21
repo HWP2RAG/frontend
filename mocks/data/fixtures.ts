@@ -199,6 +199,29 @@ export const mockAuthResponse: Schemas["AuthResponse"] = {
   token: "mock-jwt-token-abc123",
 };
 
+// --- History fixtures ---
+
+export const mockHistoryItems: Schemas["HistoryItem"][] = [
+  { id: 'conv-001', filename: 'document1.hwp', outputFormat: 'markdown', status: 'completed', fileSize: 1048576, createdAt: '2026-02-20T10:00:00Z', completedAt: '2026-02-20T10:00:30Z', hasImages: false },
+  { id: 'conv-002', filename: 'document2.hwp', outputFormat: 'json', status: 'failed', fileSize: 2097152, createdAt: '2026-02-19T14:00:00Z', completedAt: null, hasImages: false },
+  { id: 'conv-003', filename: 'report.hwp', outputFormat: 'markdown', status: 'parsing', fileSize: 524288, createdAt: '2026-02-21T09:00:00Z', completedAt: null, hasImages: true },
+];
+
+export const mockHistoryResponse: Schemas["HistoryResponse"] = {
+  items: mockHistoryItems,
+  totalCount: 3,
+  page: 1,
+  pageSize: 20,
+  totalPages: 1,
+};
+
+export const mockDownloadUrlResponse: Schemas["DownloadUrlResponse"] = {
+  downloadUrl: 'https://mock-storage.supabase.co/signed/conversion-results/conv-001.md?token=mock',
+  expiresIn: 900,
+  filename: 'document1.md',
+  format: 'markdown',
+};
+
 export const mockInitUploadResponse: Schemas["InitUploadResponse"] = {
   uploadId: "upload-abc-123",
   chunkSize: 5242880,
