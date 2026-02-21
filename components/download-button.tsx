@@ -7,7 +7,18 @@ const FORMAT_EXTENSIONS: Record<string, string> = {
   markdown: ".md",
   json: ".json",
   plaintext: ".txt",
-  "rag-json": ".json",
+  "rag-json": ".jsonl",
+  csv: ".csv",
+  html: ".html",
+};
+
+const FORMAT_MIME_TYPES: Record<string, string> = {
+  markdown: "text/plain",
+  json: "application/json",
+  plaintext: "text/plain",
+  "rag-json": "application/json",
+  csv: "text/csv",
+  html: "text/html",
 };
 
 interface DownloadButtonProps {
@@ -19,7 +30,7 @@ interface DownloadButtonProps {
 export function DownloadButton({ content, format, filename = "converted" }: DownloadButtonProps) {
   const handleDownload = useCallback(() => {
     const ext = FORMAT_EXTENSIONS[format] || ".txt";
-    const mimeType = format.includes("json") ? "application/json" : "text/plain";
+    const mimeType = FORMAT_MIME_TYPES[format] || "text/plain";
     const blob = new Blob([content], { type: `${mimeType};charset=utf-8` });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

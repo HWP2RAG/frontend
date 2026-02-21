@@ -36,6 +36,17 @@ export function ResultSplitView({ content, format, loading }: ResultSplitViewPro
         return <pre className="text-sm whitespace-pre-wrap break-words">{content}</pre>;
       }
     }
+    if (format === "html") {
+      return (
+        <div
+          className="prose prose-sm dark:prose-invert max-w-none"
+          dangerouslySetInnerHTML={{ __html: content }}
+        />
+      );
+    }
+    if (format === "csv") {
+      return <pre className="text-sm whitespace-pre-wrap break-words font-mono">{content}</pre>;
+    }
     return <pre className="text-sm whitespace-pre-wrap break-words">{content}</pre>;
   };
 

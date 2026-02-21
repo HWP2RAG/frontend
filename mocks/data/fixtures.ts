@@ -150,6 +150,26 @@ export const mockConversionResults: Record<string, Schemas["ConversionResult"]> 
       wordCount: 1200,
     },
   },
+  csv: {
+    content:
+      "\uFEFF이름,나이,직업\r\n김철수,30,개발자\r\n이영희,28,디자이너\r\n",
+    format: "csv",
+    metadata: {
+      title: "Sample Document",
+      pageCount: 5,
+      wordCount: 1200,
+    },
+  },
+  html: {
+    content:
+      '<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>hwptorag</title></head><body><main><h1>Sample Document</h1><p>This is a converted document.</p><table><thead><tr><th>Name</th><th>Age</th></tr></thead><tbody><tr><td>Alice</td><td>30</td></tr></tbody></table></main></body></html>',
+    format: "html",
+    metadata: {
+      title: "Sample Document",
+      pageCount: 5,
+      wordCount: 1200,
+    },
+  },
 };
 
 export const mockConversionResult: Schemas["ConversionResult"] =

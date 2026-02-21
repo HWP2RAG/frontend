@@ -172,7 +172,7 @@ export interface components {
         ConversionResult: {
             content: string;
             /** @enum {string} */
-            format: "markdown" | "json" | "plaintext" | "rag-json";
+            format: "markdown" | "json" | "plaintext" | "rag-json" | "csv" | "html";
             metadata: {
                 title: string;
                 pageCount: number;
@@ -193,7 +193,7 @@ export interface components {
              * @default markdown
              * @enum {string}
              */
-            outputFormat: "markdown" | "json" | "plaintext" | "rag-json";
+            outputFormat: "markdown" | "json" | "plaintext" | "rag-json" | "csv" | "html";
         };
         InitUploadResponse: {
             uploadId: string;
@@ -343,7 +343,7 @@ export interface operations {
     downloadConversion: {
         parameters: {
             query?: {
-                format?: "markdown" | "json" | "plaintext" | "rag-json";
+                format?: "markdown" | "json" | "plaintext" | "rag-json" | "csv" | "html";
             };
             header?: never;
             path: {
