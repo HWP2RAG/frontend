@@ -123,15 +123,6 @@ export function HistoryTable() {
     );
   }
 
-  // Empty state
-  if (items.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">변환 기록이 없습니다</p>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-4">
       {/* Status filter */}
@@ -152,6 +143,14 @@ export function HistoryTable() {
           <option value="failed">실패</option>
         </select>
       </div>
+
+      {/* Empty state */}
+      {items.length === 0 ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">변환 기록이 없습니다</p>
+        </div>
+      ) : (
+      <>
 
       {/* Table */}
       <div className="overflow-x-auto border rounded-lg">
@@ -236,6 +235,8 @@ export function HistoryTable() {
           </button>
         </div>
       </div>
+      </>
+      )}
     </div>
   );
 }
