@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { LoginButton } from "@/components/login-button";
+import { useAuthStore } from "@/stores/auth-store";
 
 const navItems = [
   { href: "/", label: "홈" },
@@ -21,6 +22,7 @@ const navItems = [
 export function Header() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-surface/80 backdrop-blur-lg">
@@ -49,6 +51,20 @@ export function Header() {
               <Link href={item.href}>{item.label}</Link>
             </Button>
           ))}
+          {isLoggedIn && (
+            <Button
+              variant="ghost"
+              size="sm"
+              asChild
+              className={cn(
+                "text-muted hover:text-foreground hover:bg-primary-50 transition-colors",
+                pathname === "/batch" &&
+                  "bg-primary-50 text-primary font-medium"
+              )}
+            >
+              <Link href="/batch">일괄 변환</Link>
+            </Button>
+          )}
           <div className="ml-2 border-l border-border pl-2 flex items-center gap-2">
             <LoginButton />
             <ThemeToggle />
@@ -106,6 +122,19 @@ export function Header() {
               {item.label}
             </Link>
           ))}
+          {isLoggedIn && (
+            <Link
+              href="/batch"
+              onClick={() => setMenuOpen(false)}
+              className={cn(
+                "block rounded-lg px-3 py-2.5 text-sm text-muted hover:bg-primary-50 hover:text-primary transition-colors",
+                pathname === "/batch" &&
+                  "bg-primary-50 text-primary font-medium"
+              )}
+            >
+              일괄 변환
+            </Link>
+          )}
           <div className="px-3 py-2">
             <LoginButton />
           </div>
