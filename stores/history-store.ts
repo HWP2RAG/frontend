@@ -43,7 +43,7 @@ export const useHistoryStore = create<HistoryStore>()((set, get) => ({
   ...initialState,
 
   fetchHistory: async (page?: number, status?: string | null) => {
-    const token = useAuthStore.getState().token;
+    const token = await useAuthStore.getState().ensureFreshToken();
     if (!token) {
       set({ error: "로그인이 필요합니다", items: [], loading: false });
       return;

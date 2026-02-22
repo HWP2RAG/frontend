@@ -24,7 +24,7 @@ export function BatchDownloadButton({
 
     setLoading(true);
     try {
-      const token = useAuthStore.getState().token;
+      const token = await useAuthStore.getState().ensureFreshToken();
       const headers: Record<string, string> = {};
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;

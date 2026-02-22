@@ -24,7 +24,7 @@ export const useUsageStore = create<UsageStore>()((set) => ({
     set({ loading: true });
     try {
       const headers: Record<string, string> = {};
-      const token = useAuthStore.getState().token;
+      const token = await useAuthStore.getState().ensureFreshToken();
       if (token) {
         headers["Authorization"] = `Bearer ${token}`;
       }

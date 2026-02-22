@@ -23,8 +23,8 @@ export async function uploadChunked(
   const { onProgress, signal, outputFormat } = options ?? {};
   const totalChunks = Math.ceil(file.size / CHUNK_SIZE);
 
-  // Get auth token
-  const token = useAuthStore.getState().token;
+  // Get fresh auth token (auto-refreshes if expired)
+  const token = await useAuthStore.getState().ensureFreshToken();
   const authHeaders: Record<string, string> = {
     "Content-Type": "application/json",
   };

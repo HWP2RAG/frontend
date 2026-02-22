@@ -85,8 +85,8 @@ async function uploadChunkedWithSession(
   }
 }
 
-function getAuthHeaders(): Record<string, string> {
-  const token = useAuthStore.getState().token;
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await useAuthStore.getState().ensureFreshToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -134,7 +134,7 @@ export const useBatchStore = create<BatchState>()((set, get) => ({
   },
 
   startBatch: async () => {
-    const token = useAuthStore.getState().token;
+    const token = await useAuthStore.getState().ensureFreshToken();
     if (!token) {
       toast.error("일괄 변환은 로그인이 필요합니다");
       return;
@@ -156,7 +156,7 @@ export const useBatchStore = create<BatchState>()((set, get) => ({
     try {
       const res = await fetch(`${API_BASE_URL}/api/batch/init`, {
         method: "POST",
-        headers: getAuthHeaders(),
+        headers: await getAuthHeaders(),
         body: JSON.stringify(requestBody),
       });
 
@@ -256,7 +256,7 @@ export const useBatchStore = create<BatchState>()((set, get) => ({
         `${API_BASE_URL}/api/batch/${state.batchId}/retry/${conversionId}`,
         {
           method: "POST",
-          headers: getAuthHeaders(),
+          headers: await getAuthHeaders(),
         },
       );
 
@@ -346,7 +346,7 @@ function startPolling() {
 
     try {
       const res = await fetch(`${API_BASE_URL}/api/batch/${batchId}/status`, {
-        headers: getAuthHeaders(),
+        headers: await getAuthHeaders(),
       });
 
       if (!res.ok) return;
