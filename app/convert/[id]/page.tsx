@@ -1,14 +1,22 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, use } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
-import { FormatSelector } from "@/components/format-selector";
 import { ResultSplitView } from "@/components/result-split-view";
 import { CopyButton } from "@/components/copy-button";
 import { DownloadButton } from "@/components/download-button";
 import { useConversionStore } from "@/stores/conversion-store";
+
+const FORMAT_LABELS: Record<string, string> = {
+  markdown: "Markdown",
+  json: "JSON",
+  plaintext: "Plain Text",
+  "rag-json": "RAG-JSON",
+  csv: "CSV",
+  html: "HTML",
+};
 
 interface ResultPageProps {
   params: Promise<{ id: string }>;
@@ -16,7 +24,6 @@ interface ResultPageProps {
 
 export default function ResultPage({ params }: ResultPageProps) {
   const { id } = use(params);
-  const [format, setFormat] = useState("markdown");
   const conversion = useConversionStore((s) => s.conversions[id]);
   const fetchResult = useConversionStore((s) => s.fetchResult);
 
@@ -26,6 +33,7 @@ export default function ResultPage({ params }: ResultPageProps) {
 
   const result = conversion?.result;
   const metadata = result?.metadata;
+  const format = result?.format || "markdown";
 
   return (
     <main className="flex flex-col p-8 flex-1">
@@ -37,6 +45,9 @@ export default function ResultPage({ params }: ResultPageProps) {
               <h1 className="text-xl font-bold tracking-tight">변환 결과</h1>
               {metadata ? (
                 <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="font-semibold">
+                    {FORMAT_LABELS[format] || format}
+                  </Badge>
                   <Badge variant="secondary">{metadata.pageCount} 페이지</Badge>
                   <Badge variant="secondary">{metadata.wordCount.toLocaleString()} 단어</Badge>
                 </div>
@@ -60,7 +71,6 @@ export default function ResultPage({ params }: ResultPageProps) {
               )}
             </div>
           </div>
-          <FormatSelector value={format} onChange={setFormat} />
         </div>
 
         <Separator />
