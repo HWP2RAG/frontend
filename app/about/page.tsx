@@ -374,6 +374,36 @@ export default function AboutPage() {
         </div>
       </section>
 
+      {/* Legal Notices */}
+      <section className="py-24 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-sm font-semibold text-primary tracking-widest uppercase mb-3">
+              Legal Notices
+            </p>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">
+              법적 고지
+            </h2>
+          </div>
+          <div className="space-y-8 text-sm text-muted leading-relaxed">
+            <div>
+              <h3 className="text-base font-semibold text-foreground mb-2">한컴 HWP 공개 문서 참조</h3>
+              <p>본 제품은 한글과컴퓨터의 한/글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다</p>
+              <p className="mt-1 text-xs">
+                (This product was developed with reference to Hancom&apos;s publicly disclosed HWP document file documentation)
+              </p>
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-foreground mb-2">오픈소스 고지</h3>
+              <p>
+                본 제품은 hwpers (MIT/Apache-2.0) 오픈소스 프로젝트의 코드를 포함하고 있습니다.
+                자세한 내용은 THIRD_PARTY_LICENSES 파일을 참고하세요.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="py-24 px-4 bg-primary-50/30 text-center">
         <div className="max-w-3xl mx-auto">

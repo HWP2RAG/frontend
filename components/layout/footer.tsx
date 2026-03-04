@@ -84,8 +84,11 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 pt-6 border-t border-border flex items-center justify-between text-xs text-muted">
+        <div className="mt-8 pt-6 border-t border-border flex flex-col gap-2 text-xs text-muted">
           <span>&copy; 2025 HWPtoRAG. All rights reserved.</span>
+          <span>
+            본 제품은 한글과컴퓨터의 한/글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다
+          </span>
         </div>
       </div>
     </footer>
