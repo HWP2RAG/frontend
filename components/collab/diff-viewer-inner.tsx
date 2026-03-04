@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import { MergeView } from "@codemirror/merge";
+import { MergeView, unifiedMergeView } from "@codemirror/merge";
 import { xml } from "@codemirror/lang-xml";
 import { EditorView } from "@codemirror/view";
 import { EditorState } from "@codemirror/state";
@@ -20,6 +20,7 @@ export function DiffViewerInner({
 }: DiffViewerInnerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<MergeView | null>(null);
+  const unifiedViewRef = useRef<EditorView | null>(null);
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -30,10 +31,14 @@ export function DiffViewerInner({
   useEffect(() => {
     if (!mounted || !containerRef.current) return;
 
-    // Destroy previous instance
+    // Destroy previous instances
     if (viewRef.current) {
       viewRef.current.destroy();
       viewRef.current = null;
+    }
+    if (unifiedViewRef.current) {
+      unifiedViewRef.current.destroy();
+      unifiedViewRef.current = null;
     }
 
     const isDark = resolvedTheme === "dark";
@@ -98,26 +103,48 @@ export function DiffViewerInner({
       isDark ? darkTheme : lightTheme,
     ];
 
-    const mergeView = new MergeView({
-      parent: containerRef.current,
-      a: {
-        doc: originalXml,
-        extensions: sharedExtensions,
-      },
-      b: {
+    if (mode === "unified") {
+      // Unified mode: single EditorView with unifiedMergeView extension
+      const unifiedView = new EditorView({
         doc: modifiedXml,
-        extensions: sharedExtensions,
-      },
-      collapseUnchanged: { margin: 3, minSize: 4 },
-      orientation: mode === "unified" ? undefined : undefined,
-      revertControls: mode === "unified" ? "a-to-b" : undefined,
-    });
-
-    viewRef.current = mergeView;
+        extensions: [
+          ...sharedExtensions,
+          unifiedMergeView({
+            original: originalXml,
+            highlightChanges: true,
+            gutter: true,
+            syntaxHighlightDeletions: true,
+          }),
+        ],
+        parent: containerRef.current,
+      });
+      unifiedViewRef.current = unifiedView;
+    } else {
+      // Side-by-side mode: MergeView with two panes
+      const mergeView = new MergeView({
+        parent: containerRef.current,
+        a: {
+          doc: originalXml,
+          extensions: sharedExtensions,
+        },
+        b: {
+          doc: modifiedXml,
+          extensions: sharedExtensions,
+        },
+        collapseUnchanged: { margin: 3, minSize: 4 },
+      });
+      viewRef.current = mergeView;
+    }
 
     return () => {
-      mergeView.destroy();
-      viewRef.current = null;
+      if (viewRef.current) {
+        viewRef.current.destroy();
+        viewRef.current = null;
+      }
+      if (unifiedViewRef.current) {
+        unifiedViewRef.current.destroy();
+        unifiedViewRef.current = null;
+      }
     };
   }, [originalXml, modifiedXml, mode, resolvedTheme, mounted]);
 
