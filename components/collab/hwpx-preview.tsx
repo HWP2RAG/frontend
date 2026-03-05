@@ -1,5 +1,6 @@
 "use client";
 
+import DOMPurify from "dompurify";
 import type { HtmlBlock } from "@/lib/collab-api";
 
 interface HwpxPreviewProps {
@@ -33,7 +34,7 @@ export function HwpxPreview({
               : "hover:bg-muted/50"
           }`}
           onClick={() => onBlockClick?.(block.blockUuid)}
-          dangerouslySetInnerHTML={{ __html: block.html }}
+          dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.html) }}
         />
       ))}
 
