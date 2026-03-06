@@ -92,11 +92,11 @@ export function DemoResultView() {
           <div className="flex flex-wrap gap-4 text-sm">
             <div>
               <span className="text-muted">모델:</span>{" "}
-              <span className="font-medium">{result.embedding_model}</span>
+              <span className="font-medium">{result.model}</span>
             </div>
             <div>
               <span className="text-muted">차원:</span>{" "}
-              <span className="font-medium">{result.embedding_dimension}D</span>
+              <span className="font-medium">{result.dimension}D</span>
             </div>
           </div>
           {result.chunks_preview[0]?.embedding_preview && (

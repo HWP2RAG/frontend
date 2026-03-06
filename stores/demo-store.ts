@@ -17,8 +17,8 @@ export interface DemoPipelineResult {
   chunk_time_ms: number;
   embed_time_ms: number;
   total_chunks: number;
-  embedding_model: string;
-  embedding_dimension: number;
+  model: string;
+  dimension: number;
   chunks_preview: DemoChunkItem[];
 }
 

@@ -14,7 +14,7 @@ const METRIC_DEFS = [
   { key: "chunk_time_ms", label: "청킹 시간", icon: Layers, unit: "ms" },
   { key: "embed_time_ms", label: "임베딩 시간", icon: Cpu, unit: "ms" },
   { key: "total_chunks", label: "총 청크 수", icon: Hash, unit: "개" },
-  { key: "embedding_dimension", label: "벡터 차원", icon: Ruler, unit: "D" },
+  { key: "dimension", label: "벡터 차원", icon: Ruler, unit: "D" },
 ] as const;
 
 export function LiveMetrics({ result }: LiveMetricsProps) {

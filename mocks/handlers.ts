@@ -133,8 +133,8 @@ export const handlers = [
       chunk_time_ms: 8,
       embed_time_ms: 142,
       total_chunks: 7,
-      embedding_model: "bge-m3-korean",
-      embedding_dimension: 1024,
+      model: "bge-m3-korean",
+      dimension: 1024,
       chunks_preview: [
         {
           text: "# 계약서\n\n## 제1조 (목적)\n이 계약은 갑과 을 사이의 소프트웨어 개발 용역에 관한 사항을 정함을 목적으로 한다.",
