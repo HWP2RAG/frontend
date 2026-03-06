@@ -6,7 +6,7 @@ import {
 import type { MergeReport, ResolutionStrategy } from "@/lib/collab-api";
 
 const COLLAB_API_URL =
-  process.env.NEXT_PUBLIC_COLLAB_API_URL ?? "http://localhost:3001/api";
+  process.env.NEXT_PUBLIC_COLLAB_API_URL ?? "https://hwptorag-server-production.up.railway.app/api";
 
 interface MergeState {
   // Data

@@ -115,7 +115,7 @@ export interface MergeReport {
 // ─── API Base ───────────────────────────────────────────────────────
 
 const COLLAB_API_URL =
-  process.env.NEXT_PUBLIC_COLLAB_API_URL ?? "http://localhost:3001/api";
+  process.env.NEXT_PUBLIC_COLLAB_API_URL ?? "https://hwptorag-server-production.up.railway.app/api";
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${COLLAB_API_URL}${path}`, {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 
 const COLLAB_API_URL =
-  process.env.NEXT_PUBLIC_COLLAB_API_URL ?? "http://localhost:3001/api";
+  process.env.NEXT_PUBLIC_COLLAB_API_URL ?? "https://hwptorag-server-production.up.railway.app/api";
 
 interface MergeProgress {
   progress: number; // 0-100
