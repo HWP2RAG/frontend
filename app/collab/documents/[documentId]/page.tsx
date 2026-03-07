@@ -5,11 +5,13 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import DOMPurify from "dompurify";
 import { useCollabStore } from "@/stores/collab-store";
-import { fetchBranchDiff } from "@/lib/collab-api";
-import type { DiffStatus, DiffResult } from "@/lib/collab-api";
+import { fetchBranchDiff, createBranch, createCommit } from "@/lib/collab-api";
+import type { DiffStatus, DiffResult, HtmlBlock } from "@/lib/collab-api";
 import { BranchSelector } from "@/components/collab/branch-selector";
 import { ExportButton } from "@/components/collab/export-button";
 import { BlockNavigator } from "@/components/collab/block-navigator";
+import { CreateBranchDialog } from "@/components/collab/create-branch-dialog";
+import { BlockEditorDialog } from "@/components/collab/block-editor-dialog";
 
 // ─── DiffBadge ──────────────────────────────────────────────────────
 
@@ -48,6 +50,7 @@ export default function DocumentFullViewPage() {
   const { documentId } = useParams<{ documentId: string }>();
 
   // Store state
+  const documents = useCollabStore((s) => s.documents);
   const branches = useCollabStore((s) => s.branches);
   const selectedBranch = useCollabStore((s) => s.selectedBranch);
   const commits = useCollabStore((s) => s.commits);
@@ -58,21 +61,32 @@ export default function DocumentFullViewPage() {
   const error = useCollabStore((s) => s.error);
 
   // Store actions
+  const loadDocuments = useCollabStore((s) => s.loadDocuments);
   const loadBranches = useCollabStore((s) => s.loadBranches);
   const selectBranch = useCollabStore((s) => s.selectBranch);
   const loadPreview = useCollabStore((s) => s.loadPreview);
 
+  // Derived
+  const documentName = documents.find((d) => d.id === documentId)?.name ?? "문서 뷰";
+
   // Local state
   const [diffMap, setDiffMap] = useState<Map<string, DiffStatus>>(new Map());
-  const [selectedBlockUuid, setSelectedBlockUuid] = useState<string | null>(
-    null
-  );
+  const [selectedBlockUuid, setSelectedBlockUuid] = useState<string | null>(null);
   const [isLoadingDiff, setIsLoadingDiff] = useState(false);
+  const [showCreateBranch, setShowCreateBranch] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<HtmlBlock | null>(null);
 
   // Derived
   const headCommit = commits[0] ?? null;
   const defaultBranch = branches.find((b) => b.isDefault);
   const isOnDefaultBranch = selectedBranch === defaultBranch?.name;
+
+  // 0. Load documents for name display
+  useEffect(() => {
+    if (documents.length === 0) {
+      loadDocuments();
+    }
+  }, [documents.length, loadDocuments]);
 
   // 1. Load branches on mount
   useEffect(() => {
@@ -133,6 +147,37 @@ export default function DocumentFullViewPage() {
     document.getElementById(blockUuid)?.scrollIntoView({ behavior: "smooth", block: "center" });
   }, []);
 
+  const handleCreateBranch = useCallback(
+    async (name: string) => {
+      if (!documentId) return;
+      const newBranch = await createBranch(documentId, { name });
+      await loadBranches(documentId);
+      selectBranch(newBranch.name);
+    },
+    [documentId, loadBranches, selectBranch]
+  );
+
+  const handleBlockCommit = useCallback(
+    async (blockUuid: string, content: string, message: string) => {
+      if (!documentId || !selectedBranch) return;
+      await createCommit(documentId, {
+        message,
+        branch: selectedBranch,
+        changes: [{ blockUuid, content }],
+      });
+      // Reload to see updated content
+      await loadBranches(documentId);
+    },
+    [documentId, selectedBranch, loadBranches]
+  );
+
+  const handleBlockDoubleClick = useCallback(
+    (block: HtmlBlock) => {
+      setEditingBlock(block);
+    },
+    []
+  );
+
   // Loading state
   const isInitialLoading = isLoadingBranches || isLoadingCommits;
 
@@ -161,7 +206,7 @@ export default function DocumentFullViewPage() {
             돌아가기
           </Link>
           <h1 className="text-lg font-semibold truncate">
-            문서 뷰
+            {documentName}
           </h1>
         </div>
 
@@ -186,6 +231,14 @@ export default function DocumentFullViewPage() {
               disabled={isLoadingPreview}
             />
           )}
+
+          <button
+            onClick={() => setShowCreateBranch(true)}
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs rounded-md border border-border hover:bg-accent transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" x2="12" y1="5" y2="19" /><line x1="5" x2="19" y1="12" y2="12" /></svg>
+            브랜치
+          </button>
 
           {isLoadingDiff && (
             <span className="text-xs text-muted-foreground animate-pulse">
@@ -255,11 +308,20 @@ export default function DocumentFullViewPage() {
                         : "hover:bg-muted/50"
                     }`}
                     onClick={() => handleBlockClick(block.blockUuid)}
+                    onDoubleClick={() => handleBlockDoubleClick(block)}
                   >
                     {status && (
                       <span className="absolute -left-1 top-0.5">
                         <DiffBadge status={status} />
                       </span>
+                    )}
+                    {selectedBlockUuid === block.blockUuid && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleBlockDoubleClick(block); }}
+                        className="absolute top-0.5 right-1 opacity-0 group-hover:opacity-100 transition-opacity text-xs px-1.5 py-0.5 rounded bg-primary text-primary-foreground"
+                      >
+                        편집
+                      </button>
                     )}
                     <div
                       className={status ? "ml-14" : ""}
@@ -334,6 +396,14 @@ export default function DocumentFullViewPage() {
           히스토리
         </Link>
 
+        <Link
+          href={`/collab/documents/${documentId}/governance`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border border-border hover:bg-accent transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>
+          AI 검사
+        </Link>
+
         {!isOnDefaultBranch && selectedBranch && (
           <Link
             href={`/collab/documents/${documentId}/diff?base=${defaultBranch?.name ?? "main"}&target=${selectedBranch}`}
@@ -359,6 +429,21 @@ export default function DocumentFullViewPage() {
           </Link>
         )}
       </footer>
+
+      {/* Dialogs */}
+      <CreateBranchDialog
+        open={showCreateBranch}
+        onOpenChange={setShowCreateBranch}
+        onSubmit={handleCreateBranch}
+      />
+      {editingBlock && (
+        <BlockEditorDialog
+          open={!!editingBlock}
+          onOpenChange={(open) => { if (!open) setEditingBlock(null); }}
+          block={editingBlock}
+          onCommit={handleBlockCommit}
+        />
+      )}
     </main>
   );
 }
