@@ -28,8 +28,11 @@ export default function ProjectDetailPage() {
   const currentUser = useAuthStore((s) => s.user);
 
   const [showAddMember, setShowAddMember] = useState(false);
-  const [showCreateDoc, setShowCreateDoc] = useState(false);
-  const [uploadDocId, setUploadDocId] = useState<string | null>(null);
+  const [docDialog, setDocDialog] = useState<{
+    open: boolean;
+    existingDocId?: string;
+    existingDocName?: string;
+  }>({ open: false });
 
   const linkDocument = useProjectStore((s) => s.linkDocument);
 
@@ -116,7 +119,7 @@ export default function ProjectDetailPage() {
                 문서 ({documents.length})
               </h2>
               <button
-                onClick={() => setShowCreateDoc(true)}
+                onClick={() => setDocDialog({ open: true })}
                 className="text-xs text-primary hover:underline"
               >
                 + 문서 추가
@@ -165,7 +168,7 @@ export default function ProjectDetailPage() {
                           </svg>
                         ) : (
                           <button
-                            onClick={(e) => { e.stopPropagation(); setUploadDocId(doc.id); }}
+                            onClick={(e) => { e.stopPropagation(); setDocDialog({ open: true, existingDocId: doc.id, existingDocName: doc.name }); }}
                             className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
                           >
                             문서 업로드
@@ -213,26 +216,19 @@ export default function ProjectDetailPage() {
         onSubmit={handleAddMember}
       />
       <CreateDocumentDialog
-        open={showCreateDoc}
-        onOpenChange={setShowCreateDoc}
+        key={docDialog.existingDocId ?? "new"}
+        open={docDialog.open}
+        onOpenChange={(open) => { if (!open) setDocDialog({ open: false }); }}
         projectId={projectId}
+        existingDocumentId={docDialog.existingDocId}
+        existingDocumentName={docDialog.existingDocName}
         onCreated={async (docId) => {
-          await linkDocument(projectId, docId);
+          if (!docDialog.existingDocId) {
+            await linkDocument(projectId, docId);
+          }
           await selectProject(projectId);
         }}
       />
-      {uploadDocId && (
-        <CreateDocumentDialog
-          open={!!uploadDocId}
-          onOpenChange={(open) => { if (!open) setUploadDocId(null); }}
-          projectId={projectId}
-          existingDocumentId={uploadDocId}
-          existingDocumentName={documents.find((d) => d.id === uploadDocId)?.name}
-          onCreated={async () => {
-            await selectProject(projectId);
-          }}
-        />
-      )}
     </main>
   );
 }

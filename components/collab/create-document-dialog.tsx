@@ -35,19 +35,6 @@ export function CreateDocumentDialog({
 
   const ingestProgress = useIngestProgress(step === "progress" ? documentId : null);
 
-  // Sync state when existingDocumentId changes (e.g. dialog reopened for different doc)
-  const prevExistingId = useRef(existingDocumentId);
-  if (prevExistingId.current !== existingDocumentId) {
-    prevExistingId.current = existingDocumentId;
-    if (existingDocumentId) {
-      setStep("upload");
-      setDocumentId(existingDocumentId);
-      setName(existingDocumentName ?? "");
-      setFile(null);
-      setError(null);
-    }
-  }
-
   if (!open) return null;
 
   const handleClose = () => {
