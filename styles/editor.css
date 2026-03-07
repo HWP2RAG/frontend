@@ -1,0 +1,77 @@
+/* ─── ProseMirror base ─────────────────────────────────────── */
+
+.ProseMirror {
+  outline: none;
+  min-height: 500px;
+}
+
+.ProseMirror p {
+  margin: 0.25em 0;
+}
+
+/* ─── Table styles ────────────────────────────────────────── */
+
+.ProseMirror table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0.5em 0;
+  table-layout: auto;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  border: 1px solid hsl(var(--border, 220 13% 91%));
+  padding: 0.5em 0.75em;
+  vertical-align: top;
+  min-width: 2em;
+}
+
+.ProseMirror th {
+  font-weight: 600;
+  background: hsl(var(--muted, 220 14% 96%));
+}
+
+/* Selected cell highlight */
+.ProseMirror .selectedCell {
+  background: hsl(var(--primary, 222 47% 51%) / 0.1);
+}
+
+/* ─── Opaque block styles ─────────────────────────────────── */
+
+.hwpx-opaque-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
+  padding: 0 0.25em;
+  border-radius: 0.25em;
+  background: hsl(var(--muted, 220 14% 96%));
+  font-size: 0.875em;
+  vertical-align: baseline;
+  user-select: none;
+}
+
+/* ─── Collaboration cursor ────────────────────────────────── */
+
+.collaboration-cursor__caret {
+  position: relative;
+  border-left: 2px solid;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  word-break: normal;
+}
+
+.collaboration-cursor__label {
+  position: absolute;
+  top: -1.4em;
+  left: -1px;
+  padding: 0.1em 0.3em;
+  border-radius: 0.25em 0.25em 0.25em 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: normal;
+  white-space: nowrap;
+  color: #fff;
+  user-select: none;
+  pointer-events: none;
+}
