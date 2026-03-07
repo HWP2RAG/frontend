@@ -16,7 +16,7 @@ collab-planning.md 기준 미완성 항목 고도화.
 
 ### Preview
 
-- [ ] **PREV-01**: 사용자가 특정 커밋 SHA 기준으로 문서를 미리볼 수 있다 (/preview?commit=sha)
+- [x] **PREV-01**: 사용자가 특정 커밋 SHA 기준으로 문서를 미리볼 수 있다 (/preview?commit=sha)
 
 ### Auth UI
 
@@ -24,7 +24,7 @@ collab-planning.md 기준 미완성 항목 고도화.
 
 ### UX Polish
 
-- [ ] **UX-01**: 문서 뷰 헤더에 실제 문서 이름이 표시된다
+- [x] **UX-01**: 문서 뷰 헤더에 실제 문서 이름이 표시된다
 - [x] **UX-02**: 레거시 라우트(app/collab/[documentId]/*)가 제거된다
 
 ## Out of Scope
@@ -43,9 +43,9 @@ collab-planning.md 기준 미완성 항목 고도화.
 | MERGE-02 | Phase 6 | Complete |
 | MERGE-03 | Phase 6 | Complete |
 | MERGE-04 | Phase 6 | Complete |
-| PREV-01 | Phase 7 | Pending |
+| PREV-01 | Phase 7 | Complete |
 | AUTH-01 | Phase 7 | Complete |
-| UX-01 | Phase 7 | Pending |
+| UX-01 | Phase 7 | Complete |
 | UX-02 | Phase 7 | Complete |
 
 **Coverage:**
