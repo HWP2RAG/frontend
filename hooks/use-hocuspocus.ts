@@ -1,14 +1,15 @@
 /**
  * HocuspocusProvider lifecycle management hook.
  *
- * Creates Y.Doc + HocuspocusProvider for a given documentId.
+ * Creates Y.Doc + HocuspocusProvider synchronously so the provider
+ * is available on first render (required by CollaborationCursor).
  * Manages connection lifecycle with JWT auth token refresh.
  * Wires awareness changes to useEditorStore for PresenceOverlay.
  */
 
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
 import { useAuthStore } from '@/stores/auth-store';
@@ -21,24 +22,24 @@ const WS_URL =
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
 interface UseHocuspocusReturn {
-  provider: HocuspocusProvider | null;
+  provider: HocuspocusProvider;
   ydoc: Y.Doc;
-  status: ConnectionStatus;
-  error: string | null;
 }
 
 export function useHocuspocus(documentId: string): UseHocuspocusReturn {
-  const ydocRef = useRef(new Y.Doc());
-  const providerRef = useRef<HocuspocusProvider | null>(null);
-  const [status, setStatus] = useState<ConnectionStatus>('connecting');
-  const [error, setError] = useState<string | null>(null);
+  const ydocRef = useRef<Y.Doc | null>(null);
+  if (!ydocRef.current) {
+    ydocRef.current = new Y.Doc();
+  }
+  const ydoc = ydocRef.current;
 
-  useEffect(() => {
-    const ydoc = ydocRef.current;
+  // Create provider synchronously via useMemo so it's available on first render.
+  // CollaborationCursor requires the provider at editor init time.
+  const provider = useMemo(() => {
     const editorStore = useEditorStore.getState();
     editorStore.setStatus('connecting');
 
-    const provider = new HocuspocusProvider({
+    return new HocuspocusProvider({
       url: WS_URL,
       name: documentId,
       document: ydoc,
@@ -47,58 +48,54 @@ export function useHocuspocus(documentId: string): UseHocuspocusReturn {
         return token ?? '';
       },
       onSynced() {
-        setStatus('connected');
-        setError(null);
         useEditorStore.getState().setStatus('connected');
       },
       onDisconnect() {
-        setStatus('disconnected');
         useEditorStore.getState().setStatus('disconnected');
       },
       onAuthenticationFailed({ reason }) {
-        setStatus('error');
         const msg = reason || 'Authentication failed';
-        setError(msg);
         useEditorStore.getState().setError(msg);
       },
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [documentId]);
 
-    // Wire awareness changes to editor store for PresenceOverlay
+  // Wire awareness changes to editor store
+  useEffect(() => {
     const awareness = provider.awareness;
-    if (awareness) {
-      const handleAwarenessChange = () => {
-        const users: ConnectedUser[] = [];
-        awareness.getStates().forEach((state, clientId) => {
-          const user = state?.user as { name?: string; color?: string } | undefined;
-          if (user?.name) {
-            users.push({
-              clientId,
-              name: user.name,
-              color: user.color || '#888888',
-            });
-          }
-        });
-        useEditorStore.getState().setConnectedUsers(users);
-      };
+    if (!awareness) return;
 
-      awareness.on('change', handleAwarenessChange);
-      // Initial sync
-      handleAwarenessChange();
-    }
+    const handleAwarenessChange = () => {
+      const users: ConnectedUser[] = [];
+      awareness.getStates().forEach((state, clientId) => {
+        const user = state?.user as { name?: string; color?: string } | undefined;
+        if (user?.name) {
+          users.push({
+            clientId,
+            name: user.name,
+            color: user.color || '#888888',
+          });
+        }
+      });
+      useEditorStore.getState().setConnectedUsers(users);
+    };
 
-    providerRef.current = provider;
+    awareness.on('change', handleAwarenessChange);
+    handleAwarenessChange();
 
+    return () => {
+      awareness.off('change', handleAwarenessChange);
+    };
+  }, [provider]);
+
+  // Cleanup on unmount or documentId change
+  useEffect(() => {
     return () => {
       provider.disconnect();
       provider.destroy();
-      providerRef.current = null;
     };
-  }, [documentId]);
+  }, [provider]);
 
-  return {
-    provider: providerRef.current,
-    ydoc: ydocRef.current,
-    status,
-    error,
-  };
+  return { provider, ydoc };
 }

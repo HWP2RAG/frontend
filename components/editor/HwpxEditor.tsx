@@ -45,14 +45,16 @@ function hashToIndex(str: string, mod: number): number {
 }
 
 function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
-  const { provider, ydoc, status, error } = useHocuspocus(documentId);
+  const { provider, ydoc } = useHocuspocus(documentId);
   const user = useAuthStore((s) => s.user);
   const editorStatus = useEditorStore((s) => s.status);
+  const editorError = useEditorStore((s) => s.error);
 
   const userName = user?.name || 'Anonymous';
   const userId = user?.id || 'anon';
   const cursorColor = CURSOR_COLORS[hashToIndex(userId, CURSOR_COLORS.length)];
 
+  // Provider is always available synchronously — no conditional extension inclusion.
   const editor = useEditor(
     {
       extensions: [
@@ -61,14 +63,10 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
           document: ydoc,
           field: 'default',
         }),
-        ...(provider
-          ? [
-              CollaborationCursor.configure({
-                provider,
-                user: { name: userName, color: cursorColor },
-              }),
-            ]
-          : []),
+        CollaborationCursor.configure({
+          provider,
+          user: { name: userName, color: cursorColor },
+        }),
       ],
       editorProps: {
         attributes: {
@@ -78,7 +76,7 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
       },
       immediatelyRender: false,
     },
-    [provider],
+    [],
   );
 
   // Cleanup: reset editor store on unmount
@@ -88,11 +86,11 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
     };
   }, []);
 
-  if (error || editorStatus === 'error') {
+  if (editorError || editorStatus === 'error') {
     return (
       <div className="rounded-md border border-destructive p-4 text-destructive">
         <p className="font-medium">Connection Error</p>
-        <p className="text-sm">{error || 'Unknown error'}</p>
+        <p className="text-sm">{editorError || 'Unknown error'}</p>
         <button
           type="button"
           onClick={() => window.location.reload()}
@@ -100,17 +98,6 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
         >
           Retry
         </button>
-      </div>
-    );
-  }
-
-  if (status === 'connecting' || editorStatus === 'connecting') {
-    return (
-      <div className="flex items-center justify-center min-h-[500px] text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-          <span>Connecting to document...</span>
-        </div>
       </div>
     );
   }
@@ -125,6 +112,20 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
           <SaveVersionButton documentId={documentId} branch={branch} />
         </div>
       </div>
+
+      {/* Status indicator */}
+      {editorStatus === 'connecting' && (
+        <div className="flex items-center gap-2 px-4 py-1 text-xs text-muted-foreground bg-muted/50 border-b">
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <span>연결 중...</span>
+        </div>
+      )}
+      {editorStatus === 'disconnected' && (
+        <div className="flex items-center gap-2 px-4 py-1 text-xs text-yellow-600 bg-yellow-50 dark:bg-yellow-900/20 border-b">
+          <div className="h-2 w-2 rounded-full bg-yellow-500" />
+          <span>연결 끊김 — 재연결 시도 중...</span>
+        </div>
+      )}
 
       {/* Editor content */}
       <EditorContent editor={editor} />
