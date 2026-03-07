@@ -118,8 +118,25 @@ const COLLAB_API_URL =
   process.env.NEXT_PUBLIC_COLLAB_API_URL ?? "https://hwptorag-server-production.up.railway.app/api";
 
 async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  // Inject Authorization header from auth store if available
+  const authHeaders: Record<string, string> = {};
+  try {
+    // Dynamic import avoidance: auth-store is client-only, safe in collab-api context
+    const { useAuthStore } = await import("@/stores/auth-store");
+    const token = useAuthStore.getState().token;
+    if (token) {
+      authHeaders["Authorization"] = `Bearer ${token}`;
+    }
+  } catch {
+    // Auth store not available (e.g., SSR) — proceed without token
+  }
+
   const res = await fetch(`${COLLAB_API_URL}${path}`, {
-    headers: { "Content-Type": "application/json", ...init?.headers },
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+      ...init?.headers,
+    },
     ...init,
   });
 
@@ -255,4 +272,20 @@ export async function downloadHwpx(
   }
 
   return res.blob();
+}
+
+// ─── Snapshot endpoint (VCS commit from live Y.Doc) ────────────────
+
+export async function snapshotDocument(
+  documentId: string,
+  branch: string = "main",
+  message: string = "Manual save",
+): Promise<{ commitSha256: string | null }> {
+  return apiFetch<{ commitSha256: string | null }>(
+    `/v1/collab/documents/${documentId}/snapshot`,
+    {
+      method: "POST",
+      body: JSON.stringify({ branch, message }),
+    },
+  );
 }
