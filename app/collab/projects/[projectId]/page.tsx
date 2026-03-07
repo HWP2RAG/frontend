@@ -7,6 +7,7 @@ import { useAuthStore } from "@/stores/auth-store";
 import { MemberList } from "@/components/collab/member-list";
 import { AddMemberDialog } from "@/components/collab/add-member-dialog";
 import { CreateDocumentDialog } from "@/components/collab/create-document-dialog";
+import { UploadHwpxDialog } from "@/components/collab/upload-hwpx-dialog";
 import type { ProjectRole } from "@/lib/collab-api";
 
 export default function ProjectDetailPage() {
@@ -29,6 +30,7 @@ export default function ProjectDetailPage() {
 
   const [showAddMember, setShowAddMember] = useState(false);
   const [showCreateDoc, setShowCreateDoc] = useState(false);
+  const [uploadDocId, setUploadDocId] = useState<string | null>(null);
 
   const linkDocument = useProjectStore((s) => s.linkDocument);
 
@@ -138,25 +140,42 @@ export default function ProjectDetailPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                {documents.map((doc) => (
-                  <button
-                    key={doc.id}
-                    onClick={() => router.push(`/collab/documents/${doc.id}`)}
-                    className="w-full text-left p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <h3 className="text-sm font-medium">{doc.name}</h3>
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          수정: {new Date(doc.updatedAt).toLocaleDateString("ko-KR")}
-                        </p>
+                {documents.map((doc) => {
+                  const hasContent = !!doc.updatedAt && !isNaN(new Date(doc.updatedAt).getTime());
+                  return (
+                    <div
+                      key={doc.id}
+                      className="w-full text-left p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="cursor-pointer flex-1" onClick={() => router.push(`/collab/documents/${doc.id}`)}>
+                          <h3 className="text-sm font-medium">{doc.name}</h3>
+                          {hasContent ? (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              수정: {new Date(doc.updatedAt).toLocaleDateString("ko-KR")}
+                            </p>
+                          ) : (
+                            <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
+                              파일 없음
+                            </p>
+                          )}
+                        </div>
+                        {hasContent ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground cursor-pointer" onClick={() => router.push(`/collab/documents/${doc.id}`)}>
+                            <path d="m9 18 6-6-6-6" />
+                          </svg>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setUploadDocId(doc.id); }}
+                            className="text-xs px-3 py-1.5 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+                          >
+                            문서 업로드
+                          </button>
+                        )}
                       </div>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-muted-foreground">
-                        <path d="m9 18 6-6-6-6" />
-                      </svg>
                     </div>
-                  </button>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -203,6 +222,17 @@ export default function ProjectDetailPage() {
           await selectProject(projectId);
         }}
       />
+      {uploadDocId && (
+        <UploadHwpxDialog
+          open={!!uploadDocId}
+          onOpenChange={(open) => { if (!open) setUploadDocId(null); }}
+          documentId={uploadDocId}
+          onUploadStart={() => {
+            setUploadDocId(null);
+            selectProject(projectId);
+          }}
+        />
+      )}
     </main>
   );
 }
