@@ -23,15 +23,16 @@ HWPX(한글) 문서의 Git-style 협업 플랫폼 프론트엔드. 문서 업로
 - HWPX Export download
 - AI Governance (start check, SSE progress, findings, history)
 - Merge store + ConflictResolver component
+- ✓ Merge conflict resolution page (stats, resolve, finalize) — v1.1
+- ✓ MR merge → merge result page navigation — v1.1
+- ✓ Commit-based document preview (DOMPurify) — v1.1
+- ✓ Google LoginButton in collab layout header — v1.1
+- ✓ Dynamic document name in view header — v1.1
+- ✓ Legacy route cleanup — v1.1
 
 ### Active
 
-- [ ] Merge conflict resolution page (wire up existing store + component)
-- [ ] Preview page for specific commit SHA
-- [ ] Legacy route cleanup (remove app/collab/[documentId]/*)
-- [ ] Google login UI (login button + flow on collab pages)
-- [ ] MR merge -> merge result page flow
-- [ ] Document name display in document view header
+(None — define in next milestone)
 
 ### Out of Scope
 
@@ -45,7 +46,9 @@ HWPX(한글) 문서의 Git-style 협업 플랫폼 프론트엔드. 문서 업로
 - Auth: Supabase Auth (Google OAuth -> JWT)
 - All MVP APIs implemented on backend
 - MSW mock handlers for dev mode
-- 191 tests passing across 26 test files
+- 235 tests passing across 32 test files
+- 18,719 LOC TypeScript
+- v1.0 MVP + v1.1 Enhancement shipped
 
 ## Constraints
 
@@ -62,6 +65,9 @@ HWPX(한글) 문서의 Git-style 협업 플랫폼 프론트엔드. 문서 업로
 | CodeMirror for diff | XML side-by-side diff support | -- Good |
 | Zustand per-domain stores | Separation of concerns, testability | -- Good |
 | Routes: /collab/documents/[documentId] | Clean separation from /collab/projects | -- Good |
+| DOMPurify for block HTML rendering | XSS prevention for user-generated content | ✓ Good |
+| Local state for preview page | No need for global store on standalone pages | ✓ Good |
+| Collab layout header (breadcrumb-style) | Subtle auth UI, not duplicating global header | ✓ Good |
 
 ---
-*Last updated: 2026-03-07 after milestone v1.1 start*
+*Last updated: 2026-03-08 after v1.1 milestone completion*

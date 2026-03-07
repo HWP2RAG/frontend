@@ -1,39 +1,35 @@
-# Roadmap: HWPtoRAG Collab Frontend v1.1
+# Roadmap: HWPtoRAG Collab Frontend
 
-## Phase 6: Merge Conflict Resolution
+## Milestones
 
-**Goal:** 충돌 해결 페이지를 완성하고 MR -> merge 플로우를 연결한다
+- ✅ **v1.0 MVP** — Phases 1-5 (shipped 2026-03-07)
+- ✅ **v1.1 Collab Page Enhancement** — Phases 6-7 (shipped 2026-03-07)
 
-**Requirements:** MERGE-01, MERGE-02, MERGE-03, MERGE-04
+## Phases
 
-**Plans:** 2 plans
+<details>
+<summary>✅ v1.0 MVP (Phases 1-5) — SHIPPED 2026-03-07</summary>
 
-Plans:
-- [x] 06-01-PLAN.md — Mock fixtures with conflict variants + merge store TDD tests
-- [x] 06-02-PLAN.md — Port merge page to new route + MR merge navigation + page tests
+- [x] Phase 1: Infrastructure (collab-api, MSW mocks, SSE hooks, auth store)
+- [x] Phase 2: Project CRUD + Members
+- [x] Phase 3: Core Collaboration (document view, branch/edit/commit, MR, comments, diff, history)
+- [x] Phase 4: Post-MVP (governance, commit graph)
+- [x] Phase 5: Final cleanup
 
-**Success Criteria:**
-1. merge 결과 페이지에서 자동 병합 수, 충돌 수, 충돌 상세를 확인할 수 있다
-2. 각 충돌에 대해 accept_local/accept_remote/manual_edit로 해결할 수 있다
-3. 모든 충돌 해결 후 "Merge 확정" 버튼이 활성화되고 finalize가 동작한다
-4. MR 상세에서 merge 액션 실행 시 merge 결과 페이지로 자동 이동한다
-5. 충돌이 없는 merge는 자동 완료 후 성공 상태를 표시한다
+</details>
 
-## Phase 7: Preview, Auth UI, UX Polish
+<details>
+<summary>✅ v1.1 Collab Page Enhancement (Phases 6-7) — SHIPPED 2026-03-07</summary>
 
-**Goal:** 나머지 스텁 페이지를 완성하고 UX를 다듬는다
+- [x] Phase 6: Merge Conflict Resolution (2/2 plans) — completed 2026-03-07
+- [x] Phase 7: Preview, Auth UI, UX Polish (2/2 plans) — completed 2026-03-07
 
-**Requirements:** PREV-01, AUTH-01, UX-01, UX-02
+</details>
 
-**Plans:** 2 plans
+## Progress
 
-Plans:
-- [ ] 07-01-PLAN.md — Preview page implementation + document name in view header
-- [x] 07-02-PLAN.md — Collab layout LoginButton header + legacy route removal
-
-**Success Criteria:**
-1. /preview?commit=sha 로 특정 커밋 시점의 문서가 블록별 HTML로 렌더링된다
-2. Google 로그인 버튼이 collab 레이아웃 헤더에 표시된다
-3. 문서 뷰 헤더에 실제 문서 이름이 표시된다
-4. app/collab/[documentId]/* 레거시 라우트가 완전히 제거된다
-5. 모든 기존 테스트가 통과한다
+| Phase | Milestone | Plans Complete | Status | Completed |
+|-------|-----------|----------------|--------|-----------|
+| 1-5 | v1.0 | all | Complete | 2026-03-07 |
+| 6. Merge Conflict Resolution | v1.1 | 2/2 | Complete | 2026-03-07 |
+| 7. Preview, Auth UI, UX Polish | v1.1 | 2/2 | Complete | 2026-03-07 |
