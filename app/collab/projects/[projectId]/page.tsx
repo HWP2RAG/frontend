@@ -145,10 +145,10 @@ export default function ProjectDetailPage() {
                   return (
                     <div
                       key={doc.id}
-                      className="w-full text-left p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
+                      className={`w-full text-left p-3 rounded-lg border transition-colors ${hasContent ? "border-border hover:bg-accent/50 cursor-pointer" : "border-dashed border-yellow-400/50"}`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="cursor-pointer flex-1" onClick={() => router.push(`/collab/documents/${doc.id}`)}>
+                        <div className={hasContent ? "cursor-pointer flex-1" : "flex-1"} onClick={() => hasContent && router.push(`/collab/documents/${doc.id}`)}>
                           <h3 className="text-sm font-medium">{doc.name}</h3>
                           {hasContent ? (
                             <p className="text-xs text-muted-foreground mt-0.5">
@@ -156,7 +156,7 @@ export default function ProjectDetailPage() {
                             </p>
                           ) : (
                             <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
-                              파일 없음
+                              파일 없음 — 업로드 후 문서를 볼 수 있습니다
                             </p>
                           )}
                         </div>

@@ -73,8 +73,8 @@ export function UploadHwpxDialog({
         data-testid="dialog-backdrop"
         onClick={() => onOpenChange(false)}
       />
-      <div className="relative z-50 w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
-        <h2 className="text-lg font-semibold mb-4">HWPX 파일 업로드</h2>
+      <div className="relative z-50 w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-lg">
+        <h2 className="text-lg font-semibold mb-4">HWP/HWPX 파일 업로드</h2>
 
         <div className="mb-4">
           <label
