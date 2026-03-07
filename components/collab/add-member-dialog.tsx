@@ -30,7 +30,7 @@ export function AddMemberDialog({ open, onOpenChange, onSubmit }: AddMemberDialo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
-      <div className="relative z-50 w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
+      <div className="relative z-50 w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-lg">
         <h2 className="text-lg font-semibold mb-4">멤버 추가</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">

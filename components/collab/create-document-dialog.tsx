@@ -94,7 +94,7 @@ export function CreateDocumentDialog({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/50" onClick={handleClose} />
-      <div className="relative z-50 w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-lg">
+      <div className="relative z-50 w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-lg">
         {/* Step 1: Document Name */}
         {step === "name" && (
           <>
