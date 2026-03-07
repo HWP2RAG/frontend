@@ -12,7 +12,7 @@ collab-planning.md 기준 미완성 항목 고도화.
 - [x] **MERGE-01**: 사용자가 merge 결과 페이지에서 충돌 목록을 확인할 수 있다
 - [x] **MERGE-02**: 사용자가 각 충돌에 대해 Local/Remote/직접편집으로 해결할 수 있다
 - [x] **MERGE-03**: 모든 충돌 해결 후 merge를 확정(finalize)할 수 있다
-- [ ] **MERGE-04**: MR 상세에서 merge 액션 후 merge 결과 페이지로 이동한다
+- [x] **MERGE-04**: MR 상세에서 merge 액션 후 merge 결과 페이지로 이동한다
 
 ### Preview
 
@@ -42,7 +42,7 @@ collab-planning.md 기준 미완성 항목 고도화.
 | MERGE-01 | Phase 6 | Complete |
 | MERGE-02 | Phase 6 | Complete |
 | MERGE-03 | Phase 6 | Complete |
-| MERGE-04 | Phase 6 | Pending |
+| MERGE-04 | Phase 6 | Complete |
 | PREV-01 | Phase 7 | Pending |
 | AUTH-01 | Phase 7 | Pending |
 | UX-01 | Phase 7 | Pending |

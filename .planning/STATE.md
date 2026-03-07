@@ -3,9 +3,9 @@
 ## Current Position
 
 Phase: 06-merge-conflict-resolution
-Current Plan: 2 of 2
-Status: In Progress
-Last activity: 2026-03-07 -- Completed 06-01-PLAN.md
+Current Plan: 2 of 2 (COMPLETE)
+Status: Phase Complete
+Last activity: 2026-03-07 -- Completed 06-02-PLAN.md
 
 ## Project Reference
 
@@ -16,12 +16,13 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 
 ## Accumulated Context
 
-- 216 tests passing, 28 test files
+- 225 tests passing, 29 test files
 - Merge store + ConflictResolver component built with full test coverage
 - mockMergeReportWithConflicts fixture with VALUE + DELETE_MODIFY conflicts
 - Dynamic merge mock handlers (conflict/no-conflict based on mergeResultId)
 - MR action mock returns mergeResultId for "merge" action
-- Merge page is still a stub (06-02 will implement)
+- Merge page fully implemented at /collab/documents/[documentId]/merge/[mergeResultId]
+- MR detail merge action navigates to merge result page
 - Preview page is stub
 - Legacy routes at app/collab/[documentId]/* need cleanup
 - Auth store exists but no Google login button UI
@@ -30,14 +31,17 @@ See: .planning/PROJECT.md (updated 2026-03-07)
 
 - Used vi.spyOn(global, 'fetch') for loadMergeReport store tests (raw fetch, not collab-api)
 - Used typed vi.fn<T>() pattern for strict TS component test mocks
+- Used Link component instead of router.push for static navigation in merge page
+- Tested MR merge navigation at logic level rather than full component rendering
 
 ## Performance Metrics
 
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 06 | 01 | 4min | 3 | 4 |
+| 06 | 02 | 2min | 2 | 3 |
 
 ## Last Session
 
-- **Stopped at:** Completed 06-01-PLAN.md
-- **Timestamp:** 2026-03-07T12:29:33Z
+- **Stopped at:** Completed 06-02-PLAN.md (Phase 06 complete)
+- **Timestamp:** 2026-03-07T12:34:30Z
