@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useMRStore } from "@/stores/mr-store";
 import { useCommentStore } from "@/stores/comment-store";
@@ -82,6 +82,7 @@ function actionButtonClass(variant: string): string {
 
 export default function MergeRequestDetailPage() {
   const params = useParams<{ projectId: string; mrId: string }>();
+  const router = useRouter();
   const {
     selectedMR,
     mrDiff,
@@ -112,6 +113,14 @@ export default function MergeRequestDetailPage() {
     setActionLoading(true);
     await performAction(params.projectId, params.mrId, action);
     setActionLoading(false);
+
+    // After merge action, navigate to merge result page
+    if (action === "merge") {
+      const mr = useMRStore.getState().selectedMR;
+      if (mr?.mergeResultId && mr?.documentId) {
+        router.push(`/collab/documents/${mr.documentId}/merge/${mr.mergeResultId}`);
+      }
+    }
   }
 
   async function handleAddComment() {
