@@ -7,7 +7,6 @@ import { useAuthStore } from "@/stores/auth-store";
 import { MemberList } from "@/components/collab/member-list";
 import { AddMemberDialog } from "@/components/collab/add-member-dialog";
 import { CreateDocumentDialog } from "@/components/collab/create-document-dialog";
-import { UploadHwpxDialog } from "@/components/collab/upload-hwpx-dialog";
 import type { ProjectRole } from "@/lib/collab-api";
 
 export default function ProjectDetailPage() {
@@ -223,13 +222,14 @@ export default function ProjectDetailPage() {
         }}
       />
       {uploadDocId && (
-        <UploadHwpxDialog
+        <CreateDocumentDialog
           open={!!uploadDocId}
           onOpenChange={(open) => { if (!open) setUploadDocId(null); }}
-          documentId={uploadDocId}
-          onUploadStart={() => {
-            setUploadDocId(null);
-            selectProject(projectId);
+          projectId={projectId}
+          existingDocumentId={uploadDocId}
+          existingDocumentName={documents.find((d) => d.id === uploadDocId)?.name}
+          onCreated={async () => {
+            await selectProject(projectId);
           }}
         />
       )}

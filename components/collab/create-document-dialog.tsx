@@ -9,6 +9,9 @@ interface CreateDocumentDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   onCreated: (documentId: string) => Promise<void>;
+  /** When provided, skip the name step and start at upload for this existing document */
+  existingDocumentId?: string;
+  existingDocumentName?: string;
 }
 
 type Step = "name" | "upload" | "progress" | "done";
@@ -18,10 +21,13 @@ export function CreateDocumentDialog({
   onOpenChange,
   projectId,
   onCreated,
+  existingDocumentId,
+  existingDocumentName,
 }: CreateDocumentDialogProps) {
-  const [step, setStep] = useState<Step>("name");
-  const [name, setName] = useState("");
-  const [documentId, setDocumentId] = useState<string | null>(null);
+  const isExisting = !!existingDocumentId;
+  const [step, setStep] = useState<Step>(isExisting ? "upload" : "name");
+  const [name, setName] = useState(existingDocumentName ?? "");
+  const [documentId, setDocumentId] = useState<string | null>(existingDocumentId ?? null);
   const [file, setFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,12 +35,25 @@ export function CreateDocumentDialog({
 
   const ingestProgress = useIngestProgress(step === "progress" ? documentId : null);
 
+  // Sync state when existingDocumentId changes (e.g. dialog reopened for different doc)
+  const prevExistingId = useRef(existingDocumentId);
+  if (prevExistingId.current !== existingDocumentId) {
+    prevExistingId.current = existingDocumentId;
+    if (existingDocumentId) {
+      setStep("upload");
+      setDocumentId(existingDocumentId);
+      setName(existingDocumentName ?? "");
+      setFile(null);
+      setError(null);
+    }
+  }
+
   if (!open) return null;
 
   const handleClose = () => {
-    setStep("name");
-    setName("");
-    setDocumentId(null);
+    setStep(isExisting ? "upload" : "name");
+    setName(existingDocumentName ?? "");
+    setDocumentId(existingDocumentId ?? null);
     setFile(null);
     setError(null);
     onOpenChange(false);
@@ -132,9 +151,11 @@ export function CreateDocumentDialog({
         {step === "upload" && (
           <>
             <h2 className="text-lg font-semibold mb-1">HWP/HWPX 파일 업로드</h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              문서 &quot;{name}&quot;에 HWP 또는 HWPX 파일을 업로드하세요.
-            </p>
+            {name && (
+              <p className="text-sm text-muted-foreground mb-4">
+                문서 &quot;{name}&quot;에 HWP 또는 HWPX 파일을 업로드하세요.
+              </p>
+            )}
             <div className="mb-4">
               <input
                 ref={fileRef}
@@ -151,8 +172,8 @@ export function CreateDocumentDialog({
             </div>
             {error && <p className="text-xs text-destructive mb-3">{error}</p>}
             <div className="flex justify-end gap-2">
-              <button type="button" onClick={handleSkipUpload} className="px-4 py-2 text-sm rounded-md border border-border hover:bg-muted transition-colors" disabled={isSubmitting}>
-                건너뛰기
+              <button type="button" onClick={isExisting ? handleClose : handleSkipUpload} className="px-4 py-2 text-sm rounded-md border border-border hover:bg-muted transition-colors" disabled={isSubmitting}>
+                {isExisting ? "취소" : "건너뛰기"}
               </button>
               <button onClick={handleUpload} disabled={!file || isSubmitting} className="px-4 py-2 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                 {isSubmitting ? "업로드 중..." : "업로드"}
