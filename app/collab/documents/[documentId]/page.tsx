@@ -255,8 +255,20 @@ export default function DocumentFullViewPage() {
         </div>
       )}
 
+      {/* ── Empty state: no branches (no file uploaded) ─────────── */}
+      {!isInitialLoading && !error && branches.length === 0 && (
+        <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="opacity-40">
+            <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+            <polyline points="14 2 14 8 20 8" />
+          </svg>
+          <p className="text-sm">아직 업로드된 파일이 없습니다</p>
+          <p className="text-xs">HWP 또는 HWPX 파일을 업로드하면 문서 내용을 볼 수 있습니다</p>
+        </div>
+      )}
+
       {/* ── Content ─────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0 grid grid-cols-[250px_1fr]">
+      {branches.length > 0 && <div className="flex-1 min-h-0 grid grid-cols-[250px_1fr]">
         {/* Sidebar */}
         <aside className="border-r border-border overflow-hidden">
           {isInitialLoading || isLoadingPreview ? (
@@ -370,7 +382,7 @@ export default function DocumentFullViewPage() {
             </div>
           )}
         </section>
-      </div>
+      </div>}
 
       {/* ── Bottom Toolbar ──────────────────────────────────────── */}
       <footer className="shrink-0 border-t border-border px-4 py-2 flex items-center gap-3">

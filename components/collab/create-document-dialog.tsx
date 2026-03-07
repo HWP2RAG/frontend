@@ -131,15 +131,15 @@ export function CreateDocumentDialog({
         {/* Step 2: Upload HWPX */}
         {step === "upload" && (
           <>
-            <h2 className="text-lg font-semibold mb-1">HWPX 파일 업로드</h2>
+            <h2 className="text-lg font-semibold mb-1">HWP/HWPX 파일 업로드</h2>
             <p className="text-sm text-muted-foreground mb-4">
-              문서 &quot;{name}&quot;에 HWPX 파일을 업로드하세요.
+              문서 &quot;{name}&quot;에 HWP 또는 HWPX 파일을 업로드하세요.
             </p>
             <div className="mb-4">
               <input
                 ref={fileRef}
                 type="file"
-                accept=".hwpx"
+                accept=".hwp,.hwpx"
                 onChange={(e) => { setFile(e.target.files?.[0] ?? null); setError(null); }}
                 className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
               />

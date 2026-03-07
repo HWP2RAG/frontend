@@ -87,7 +87,7 @@ export function UploadHwpxDialog({
             id="hwpx-file-input"
             ref={inputRef}
             type="file"
-            accept=".hwpx"
+            accept=".hwp,.hwpx"
             onChange={handleFileChange}
             disabled={isUploading}
             className="w-full text-sm file:mr-3 file:rounded-md file:border file:border-border file:bg-background file:px-3 file:py-1.5 file:text-sm file:font-medium hover:file:bg-muted"
