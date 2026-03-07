@@ -29,7 +29,7 @@ Plans:
 
 Plans:
 - [ ] 07-01-PLAN.md — Preview page implementation + document name in view header
-- [ ] 07-02-PLAN.md — Collab layout LoginButton header + legacy route removal
+- [x] 07-02-PLAN.md — Collab layout LoginButton header + legacy route removal
 
 **Success Criteria:**
 1. /preview?commit=sha 로 특정 커밋 시점의 문서가 블록별 HTML로 렌더링된다

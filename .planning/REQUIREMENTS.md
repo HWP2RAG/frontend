@@ -20,12 +20,12 @@ collab-planning.md 기준 미완성 항목 고도화.
 
 ### Auth UI
 
-- [ ] **AUTH-01**: 사용자가 collab 페이지에서 Google 로그인 버튼으로 로그인할 수 있다
+- [x] **AUTH-01**: 사용자가 collab 페이지에서 Google 로그인 버튼으로 로그인할 수 있다
 
 ### UX Polish
 
 - [ ] **UX-01**: 문서 뷰 헤더에 실제 문서 이름이 표시된다
-- [ ] **UX-02**: 레거시 라우트(app/collab/[documentId]/*)가 제거된다
+- [x] **UX-02**: 레거시 라우트(app/collab/[documentId]/*)가 제거된다
 
 ## Out of Scope
 
@@ -44,9 +44,9 @@ collab-planning.md 기준 미완성 항목 고도화.
 | MERGE-03 | Phase 6 | Complete |
 | MERGE-04 | Phase 6 | Complete |
 | PREV-01 | Phase 7 | Pending |
-| AUTH-01 | Phase 7 | Pending |
+| AUTH-01 | Phase 7 | Complete |
 | UX-01 | Phase 7 | Pending |
-| UX-02 | Phase 7 | Pending |
+| UX-02 | Phase 7 | Complete |
 
 **Coverage:**
 - v1.1 requirements: 8 total
@@ -55,4 +55,4 @@ collab-planning.md 기준 미완성 항목 고도화.
 
 ---
 *Requirements defined: 2026-03-07*
-*Last updated: 2026-03-07 after initial definition*
+*Last updated: 2026-03-07 after 07-02 completion*
