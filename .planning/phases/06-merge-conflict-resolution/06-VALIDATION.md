@@ -2,7 +2,7 @@
 phase: 6
 slug: merge-conflict-resolution
 status: draft
-nyquist_compliant: false
+nyquist_compliant: true
 wave_0_complete: false
 created: 2026-03-07
 ---
@@ -38,11 +38,10 @@ created: 2026-03-07
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 06-01-01 | 01 | 1 | MERGE-01, MERGE-02, MERGE-03 | unit | `npx vitest run stores/__tests__/merge-store.test.ts` | ❌ W0 | ⬜ pending |
-| 06-01-02 | 01 | 1 | MERGE-02 | unit | `npx vitest run components/collab/__tests__/conflict-resolver.test.tsx` | ❌ W0 | ⬜ pending |
-| 06-01-03 | 01 | 1 | MERGE-01 | fixture | N/A (fixture update) | ❌ W0 | ⬜ pending |
-| 06-02-01 | 02 | 2 | MERGE-01, MERGE-03 | component | `npx vitest run components/collab/__tests__/merge-page.test.tsx` | ❌ W0 | ⬜ pending |
-| 06-02-02 | 02 | 2 | MERGE-04 | component | `npx vitest run components/collab/__tests__/mr-merge-flow.test.tsx` | ❌ W0 | ⬜ pending |
+| 06-01-01 | 01 | 1 | MERGE-01, MERGE-02, MERGE-03 | fixture | N/A (fixture + handler update) | N/A | ⬜ pending |
+| 06-01-02 | 01 | 1 | MERGE-01, MERGE-02, MERGE-03 | unit | `npx vitest run stores/__tests__/merge-store.test.ts` | ❌ W0 | ⬜ pending |
+| 06-01-03 | 01 | 1 | MERGE-02 | component | `npx vitest run components/collab/__tests__/conflict-resolver.test.tsx` | ❌ W0 | ⬜ pending |
+| 06-02-01 | 02 | 2 | MERGE-01, MERGE-02, MERGE-03, MERGE-04 | component | `npx vitest run components/collab/__tests__/merge-page.test.tsx` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -52,8 +51,7 @@ created: 2026-03-07
 
 - [ ] `stores/__tests__/merge-store.test.ts` — stubs for MERGE-01, MERGE-02, MERGE-03
 - [ ] `components/collab/__tests__/conflict-resolver.test.tsx` — stubs for MERGE-02
-- [ ] `components/collab/__tests__/merge-page.test.tsx` — stubs for MERGE-01, MERGE-03
-- [ ] `components/collab/__tests__/mr-merge-flow.test.tsx` — stubs for MERGE-04
+- [ ] `components/collab/__tests__/merge-page.test.tsx` — stubs for MERGE-01, MERGE-03, MERGE-04 (includes MR merge navigation tests)
 - [ ] `mocks/collab-fixtures.ts` update — add `mockMergeReportWithConflicts` fixture
 - [ ] `mocks/collab-handlers.ts` update — dynamic merge report handler (conflict vs no-conflict)
 
@@ -70,11 +68,11 @@ created: 2026-03-07
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 15s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 15s
+- [x] `nyquist_compliant: true` set in frontmatter
 
 **Approval:** pending
