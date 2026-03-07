@@ -55,7 +55,7 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
       },
       immediatelyRender: false,
     },
-    [],
+    [ydoc],
   );
 
   // Cleanup: reset editor store on unmount

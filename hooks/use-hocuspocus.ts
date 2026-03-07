@@ -1,15 +1,14 @@
 /**
  * HocuspocusProvider lifecycle management hook.
  *
- * Creates Y.Doc + HocuspocusProvider synchronously so the provider
- * is available on first render (required by Collaboration extension).
- * Manages connection lifecycle with JWT auth token refresh.
- * Wires awareness changes to useEditorStore for PresenceOverlay.
+ * Creates Y.Doc + HocuspocusProvider per documentId.
+ * When documentId changes, both Y.Doc and provider are destroyed and recreated
+ * to prevent cross-document state contamination.
  */
 
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 import { HocuspocusProvider } from '@hocuspocus/provider';
 import * as Y from 'yjs';
 import { useAuthStore } from '@/stores/auth-store';
@@ -29,18 +28,15 @@ interface UseHocuspocusReturn {
 }
 
 export function useHocuspocus(documentId: string): UseHocuspocusReturn {
-  const ydocRef = useRef<Y.Doc | null>(null);
-  if (!ydocRef.current) {
-    ydocRef.current = new Y.Doc();
-  }
-  const ydoc = ydocRef.current;
+  // Create fresh Y.Doc + provider per documentId.
+  // useMemo ensures same instance for same documentId; new documentId = new pair.
+  const { provider, ydoc } = useMemo(() => {
+    const doc = new Y.Doc();
 
-  // Create provider synchronously via useMemo so it's available on first render.
-  const provider = useMemo(() => {
-    return new HocuspocusProvider({
+    const prov = new HocuspocusProvider({
       url: WS_URL,
       name: documentId,
-      document: ydoc,
+      document: doc,
       token: async () => {
         const token = await useAuthStore.getState().ensureFreshToken();
         return token ?? '';
@@ -56,12 +52,23 @@ export function useHocuspocus(documentId: string): UseHocuspocusReturn {
         useEditorStore.getState().setError(msg);
       },
     });
+
+    return { provider: prov, ydoc: doc };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId]);
 
-  // Set initial status via effect (not during render) to avoid setState-during-render warning
+  // Set initial status + local awareness state via effect (not during render)
   useEffect(() => {
     useEditorStore.getState().setStatus('connecting');
+
+    // Fix 3: Set local user awareness so other clients can see us in PresenceOverlay
+    const awareness = provider.awareness;
+    if (awareness) {
+      const authState = useAuthStore.getState();
+      const name = authState.user?.name || 'Anonymous';
+      const color = '#' + (authState.user?.id || 'anon').slice(0, 6).padEnd(6, '0');
+      awareness.setLocalStateField('user', { name, color });
+    }
   }, [provider]);
 
   // Wire awareness changes to editor store
@@ -92,13 +99,14 @@ export function useHocuspocus(documentId: string): UseHocuspocusReturn {
     };
   }, [provider]);
 
-  // Cleanup on unmount or documentId change
+  // Cleanup on unmount or documentId change — destroy both provider and Y.Doc
   useEffect(() => {
     return () => {
       provider.disconnect();
       provider.destroy();
+      ydoc.destroy();
     };
-  }, [provider]);
+  }, [provider, ydoc]);
 
   return { provider, ydoc };
 }
