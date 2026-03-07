@@ -1,4 +1,6 @@
-// ─── Types ──────────────────────────────────────────────────────────
+import { useAuthStore } from "@/stores/auth-store";
+
+// ─── Existing Types ─────────────────────────────────────────────────
 
 export interface HtmlBlock {
   blockUuid: string;
@@ -112,32 +114,184 @@ export interface MergeReport {
   }>;
 }
 
+// ─── New Types: Project ─────────────────────────────────────────────
+
+export interface Project {
+  id: string;
+  name: string;
+  ownerId: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type ProjectRole = "owner" | "editor" | "viewer";
+
+export interface ProjectMember {
+  id: string;
+  projectId: string;
+  userId: string;
+  role: ProjectRole;
+  createdAt: string;
+}
+
+// ─── New Types: Merge Request ───────────────────────────────────────
+
+export type MRStatus =
+  | "open"
+  | "approved"
+  | "merge_pending"
+  | "rejected"
+  | "merged"
+  | "closed";
+
+export interface MergeRequest {
+  id: string;
+  projectId: string;
+  documentId: string;
+  title: string;
+  description: string | null;
+  authorId: string;
+  sourceBranch: string;
+  targetBranch: string;
+  status: MRStatus;
+  mergeResultId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type MRAction = "approve" | "reject" | "reopen" | "close" | "merge";
+
+// ─── New Types: Comment ─────────────────────────────────────────────
+
+export interface Comment {
+  id: string;
+  projectId: string;
+  authorId: string;
+  targetType: "block" | "merge_request";
+  targetId: string;
+  documentId?: string | null;
+  commitSha256?: string | null;
+  parentId?: string | null;
+  body: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CommentThread {
+  comment: Comment;
+  replies: Comment[];
+}
+
+// ─── New Types: Governance ──────────────────────────────────────────
+
+export interface GovernanceResult {
+  id: string;
+  documentId: string;
+  commitSha256: string;
+  status: "pending" | "running" | "completed" | "partial" | "failed";
+  results: GovernanceFinding[];
+  jobId: string | null;
+  createdAt: string;
+  completedAt: string | null;
+}
+
+export interface GovernanceFinding {
+  checker: string;
+  severity: string;
+  blockUuid: string;
+  message: string;
+  suggestion?: string;
+}
+
+// ─── New Types: Checkout ────────────────────────────────────────────
+
+export interface CheckoutBlock {
+  blockUuid: string;
+  sectionPath: string;
+  elementTag: string;
+  position: number;
+  contentSha256: string;
+}
+
+export interface CheckoutResponse {
+  commit: {
+    sha256: string;
+    message: string;
+    authorId: string | null;
+    blockCount: number;
+    createdAt: string;
+  };
+  blockCount: number;
+  blocks: CheckoutBlock[];
+}
+
+// ─── New Types: Block Change / Commit ───────────────────────────────
+
+export interface BlockChange {
+  blockUuid: string;
+  content: string;
+}
+
+export interface CommitCreateRequest {
+  message: string;
+  branch?: string;
+  authorId?: string;
+  changes?: BlockChange[];
+}
+
+export interface CommitCreateResponse {
+  commitSha256: string;
+  treeSha256: string;
+  parentSha256: string;
+  branch: string;
+  blockCount: number;
+  changedBlocks: number;
+}
+
+// ─── New Types: Branch Creation ─────────────────────────────────────
+
+export interface BranchCreateRequest {
+  name: string;
+  sourceCommitSha256?: string;
+}
+
+// ─── New Types: Document Creation ───────────────────────────────────
+
+export interface DocumentCreateRequest {
+  name: string;
+  ownerId?: string;
+}
+
+// ─── New Types: Upload ──────────────────────────────────────────────
+
+export interface UploadResponse {
+  jobId: string;
+  documentId: string;
+  status: string;
+}
+
 // ─── API Base ───────────────────────────────────────────────────────
 
 const COLLAB_API_URL =
   process.env.NEXT_PUBLIC_COLLAB_API_URL ?? "https://hwptorag-server-production.up.railway.app/api";
 
-async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
-  // Inject Authorization header from auth store if available
-  const authHeaders: Record<string, string> = {};
-  try {
-    // Dynamic import avoidance: auth-store is client-only, safe in collab-api context
-    const { useAuthStore } = await import("@/stores/auth-store");
-    const token = useAuthStore.getState().token;
-    if (token) {
-      authHeaders["Authorization"] = `Bearer ${token}`;
-    }
-  } catch {
-    // Auth store not available (e.g., SSR) — proceed without token
+async function getAuthHeaders(): Promise<Record<string, string>> {
+  const token = await useAuthStore.getState().ensureFreshToken();
+  if (token) {
+    return { Authorization: `Bearer ${token}` };
   }
+  return {};
+}
 
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const authHeaders = await getAuthHeaders();
   const res = await fetch(`${COLLAB_API_URL}${path}`, {
+    ...init,
     headers: {
       "Content-Type": "application/json",
       ...authHeaders,
-      ...init?.headers,
+      ...(init?.headers as Record<string, string>),
     },
-    ...init,
   });
 
   if (!res.ok) {
@@ -150,10 +304,65 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+async function apiFetchVoid(path: string, init?: RequestInit): Promise<void> {
+  const authHeaders = await getAuthHeaders();
+  const res = await fetch(`${COLLAB_API_URL}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...authHeaders,
+      ...(init?.headers as Record<string, string>),
+    },
+  });
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      `Collab API error ${res.status}: ${body || res.statusText}`
+    );
+  }
+}
+
 // ─── Document endpoints ─────────────────────────────────────────────
 
 export async function fetchDocuments(): Promise<DocumentListItem[]> {
   return apiFetch<DocumentListItem[]>("/v1/collab/documents");
+}
+
+export async function createDocument(
+  req: DocumentCreateRequest
+): Promise<{ id: string; name: string }> {
+  return apiFetch<{ id: string; name: string }>("/v1/collab/documents", {
+    method: "POST",
+    body: JSON.stringify(req),
+  });
+}
+
+export async function uploadHwpx(
+  documentId: string,
+  file: File
+): Promise<UploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const authHeaders = await getAuthHeaders();
+  const res = await fetch(
+    `${COLLAB_API_URL}/v1/collab/documents/${documentId}/upload`,
+    {
+      method: "POST",
+      headers: { ...authHeaders },
+      body: formData,
+    }
+  );
+
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(
+      `Collab API error ${res.status}: ${body || res.statusText}`
+    );
+  }
+
+  return res.json() as Promise<UploadResponse>;
 }
 
 // ─── Branch endpoints ───────────────────────────────────────────────
@@ -163,6 +372,19 @@ export async function fetchBranches(
 ): Promise<BranchListItem[]> {
   return apiFetch<BranchListItem[]>(
     `/v1/collab/documents/${documentId}/branches`
+  );
+}
+
+export async function createBranch(
+  documentId: string,
+  req: BranchCreateRequest
+): Promise<BranchListItem> {
+  return apiFetch<BranchListItem>(
+    `/v1/collab/documents/${documentId}/branches`,
+    {
+      method: "POST",
+      body: JSON.stringify(req),
+    }
   );
 }
 
@@ -183,6 +405,19 @@ export async function fetchCommitHistory(
   );
 }
 
+export async function createCommit(
+  documentId: string,
+  req: CommitCreateRequest
+): Promise<CommitCreateResponse> {
+  return apiFetch<CommitCreateResponse>(
+    `/v1/collab/documents/${documentId}/commits`,
+    {
+      method: "POST",
+      body: JSON.stringify(req),
+    }
+  );
+}
+
 // ─── Preview endpoint ───────────────────────────────────────────────
 
 export async function fetchPreview(
@@ -194,7 +429,18 @@ export async function fetchPreview(
   );
 }
 
-// ─── Diff endpoint ──────────────────────────────────────────────────
+// ─── Checkout endpoint ──────────────────────────────────────────────
+
+export async function fetchCheckout(
+  documentId: string,
+  commitSha: string
+): Promise<CheckoutResponse> {
+  return apiFetch<CheckoutResponse>(
+    `/v1/collab/documents/${documentId}/checkout/${commitSha}`
+  );
+}
+
+// ─── Diff endpoints ─────────────────────────────────────────────────
 
 export async function fetchDiff(
   documentId: string,
@@ -204,6 +450,17 @@ export async function fetchDiff(
   const params = new URLSearchParams({ base, target });
   return apiFetch<DiffResult>(
     `/v1/collab/documents/${documentId}/diff?${params}`
+  );
+}
+
+export async function fetchBranchDiff(
+  documentId: string,
+  baseBranch: string,
+  targetBranch: string
+): Promise<DiffResult> {
+  const params = new URLSearchParams({ base: baseBranch, target: targetBranch });
+  return apiFetch<DiffResult>(
+    `/v1/collab/documents/${documentId}/diff/branches?${params}`
   );
 }
 
@@ -274,18 +531,254 @@ export async function downloadHwpx(
   return res.blob();
 }
 
-// ─── Snapshot endpoint (VCS commit from live Y.Doc) ────────────────
+// ─── Project endpoints (all auth) ───────────────────────────────────
 
-export async function snapshotDocument(
-  documentId: string,
-  branch: string = "main",
-  message: string = "Manual save",
-): Promise<{ commitSha256: string | null }> {
-  return apiFetch<{ commitSha256: string | null }>(
-    `/v1/collab/documents/${documentId}/snapshot`,
+export async function fetchProjects(): Promise<Project[]> {
+  return apiFetch<Project[]>("/v1/collab/projects", {});
+}
+
+export async function createProject(name: string): Promise<Project> {
+  return apiFetch<Project>("/v1/collab/projects", {
+    method: "POST",
+
+    body: JSON.stringify({ name }),
+  });
+}
+
+export async function fetchProject(projectId: string): Promise<Project> {
+  return apiFetch<Project>(`/v1/collab/projects/${projectId}`, {});
+}
+
+export async function fetchProjectMembers(
+  projectId: string
+): Promise<ProjectMember[]> {
+  return apiFetch<ProjectMember[]>(
+    `/v1/collab/projects/${projectId}/members`,
+    {}
+  );
+}
+
+export async function addProjectMember(
+  projectId: string,
+  userId: string,
+  role: ProjectRole
+): Promise<ProjectMember> {
+  return apiFetch<ProjectMember>(
+    `/v1/collab/projects/${projectId}/members`,
     {
       method: "POST",
-      body: JSON.stringify({ branch, message }),
-    },
+
+      body: JSON.stringify({ userId, role }),
+    }
+  );
+}
+
+export async function removeProjectMember(
+  projectId: string,
+  userId: string
+): Promise<void> {
+  return apiFetchVoid(
+    `/v1/collab/projects/${projectId}/members/${userId}`,
+    {
+      method: "DELETE",
+
+    }
+  );
+}
+
+export async function linkDocumentToProject(
+  projectId: string,
+  documentId: string
+): Promise<void> {
+  await apiFetch(
+    `/v1/collab/projects/${projectId}/documents`,
+    {
+      method: "POST",
+
+      body: JSON.stringify({ documentId }),
+    }
+  );
+}
+
+export async function fetchProjectDocuments(
+  projectId: string
+): Promise<DocumentListItem[]> {
+  return apiFetch<DocumentListItem[]>(
+    `/v1/collab/projects/${projectId}/documents`,
+    {}
+  );
+}
+
+// ─── Merge Request endpoints (all auth) ─────────────────────────────
+
+export async function fetchMergeRequests(
+  projectId: string,
+  status?: string
+): Promise<MergeRequest[]> {
+  const params = new URLSearchParams();
+  if (status) params.set("status", status);
+  const qs = params.toString();
+  return apiFetch<MergeRequest[]>(
+    `/v1/collab/projects/${projectId}/merge-requests${qs ? `?${qs}` : ""}`,
+    {}
+  );
+}
+
+export async function createMergeRequest(
+  projectId: string,
+  req: {
+    documentId: string;
+    title: string;
+    sourceBranch: string;
+    targetBranch?: string;
+    description?: string;
+  }
+): Promise<MergeRequest> {
+  return apiFetch<MergeRequest>(
+    `/v1/collab/projects/${projectId}/merge-requests`,
+    {
+      method: "POST",
+
+      body: JSON.stringify(req),
+    }
+  );
+}
+
+export async function fetchMergeRequest(
+  projectId: string,
+  mrId: string
+): Promise<MergeRequest> {
+  return apiFetch<MergeRequest>(
+    `/v1/collab/projects/${projectId}/merge-requests/${mrId}`,
+    {}
+  );
+}
+
+export async function fetchMergeRequestDiff(
+  projectId: string,
+  mrId: string
+): Promise<DiffResult> {
+  return apiFetch<DiffResult>(
+    `/v1/collab/projects/${projectId}/merge-requests/${mrId}/diff`,
+    {}
+  );
+}
+
+export async function performMRAction(
+  projectId: string,
+  mrId: string,
+  action: MRAction
+): Promise<void> {
+  await apiFetch(
+    `/v1/collab/projects/${projectId}/merge-requests/${mrId}/actions`,
+    {
+      method: "POST",
+
+      body: JSON.stringify({ action }),
+    }
+  );
+}
+
+// ─── Comment endpoints (all auth) ───────────────────────────────────
+
+export async function fetchComments(
+  projectId: string,
+  targetType: string,
+  targetId: string
+): Promise<CommentThread[]> {
+  const params = new URLSearchParams({ targetType, targetId });
+  return apiFetch<CommentThread[]>(
+    `/v1/collab/projects/${projectId}/comments?${params}`,
+    {}
+  );
+}
+
+export async function createComment(
+  projectId: string,
+  req: {
+    targetType: string;
+    targetId: string;
+    documentId?: string;
+    commitSha256?: string;
+    parentId?: string;
+    body: string;
+  }
+): Promise<Comment> {
+  return apiFetch<Comment>(
+    `/v1/collab/projects/${projectId}/comments`,
+    {
+      method: "POST",
+
+      body: JSON.stringify(req),
+    }
+  );
+}
+
+export async function updateComment(
+  projectId: string,
+  commentId: string,
+  body: string
+): Promise<Comment> {
+  return apiFetch<Comment>(
+    `/v1/collab/projects/${projectId}/comments/${commentId}`,
+    {
+      method: "PATCH",
+
+      body: JSON.stringify({ body }),
+    }
+  );
+}
+
+export async function deleteComment(
+  projectId: string,
+  commentId: string
+): Promise<void> {
+  return apiFetchVoid(
+    `/v1/collab/projects/${projectId}/comments/${commentId}`,
+    {
+      method: "DELETE",
+
+    }
+  );
+}
+
+// ─── Governance endpoints (all auth) ────────────────────────────────
+
+export async function startGovernance(
+  projectId: string,
+  req: {
+    documentId: string;
+    commitSha256: string;
+    checks?: string[];
+  }
+): Promise<GovernanceResult> {
+  return apiFetch<GovernanceResult>(
+    `/v1/collab/projects/${projectId}/governance`,
+    {
+      method: "POST",
+
+      body: JSON.stringify(req),
+    }
+  );
+}
+
+export async function fetchGovernanceResult(
+  projectId: string,
+  resultId: string
+): Promise<GovernanceResult> {
+  return apiFetch<GovernanceResult>(
+    `/v1/collab/projects/${projectId}/governance/${resultId}`,
+    {}
+  );
+}
+
+export async function fetchGovernanceHistory(
+  projectId: string,
+  documentId: string
+): Promise<GovernanceResult[]> {
+  const params = new URLSearchParams({ documentId });
+  return apiFetch<GovernanceResult[]>(
+    `/v1/collab/projects/${projectId}/governance?${params}`,
+    {}
   );
 }

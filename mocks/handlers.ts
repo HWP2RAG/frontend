@@ -11,8 +11,10 @@ import {
   mockHistoryResponse,
   mockDownloadUrlResponse,
 } from "./data/fixtures";
+import { collabHandlers } from "./collab-handlers";
 
 export const handlers = [
+  ...collabHandlers,
   http.post("*/api/upload/init", () => {
     return HttpResponse.json(mockInitUploadResponse, { status: 201 });
   }),
