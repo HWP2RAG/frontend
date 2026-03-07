@@ -9,8 +9,8 @@
 **Plans:** 2 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — Mock fixtures with conflict variants + merge store TDD tests
-- [ ] 06-02-PLAN.md — Port merge page to new route + MR merge navigation + page tests
+- [x] 06-01-PLAN.md — Mock fixtures with conflict variants + merge store TDD tests
+- [x] 06-02-PLAN.md — Port merge page to new route + MR merge navigation + page tests
 
 **Success Criteria:**
 1. merge 결과 페이지에서 자동 병합 수, 충돌 수, 충돌 상세를 확인할 수 있다
@@ -24,6 +24,12 @@ Plans:
 **Goal:** 나머지 스텁 페이지를 완성하고 UX를 다듬는다
 
 **Requirements:** PREV-01, AUTH-01, UX-01, UX-02
+
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — Preview page implementation + document name in view header
+- [ ] 07-02-PLAN.md — Collab layout LoginButton header + legacy route removal
 
 **Success Criteria:**
 1. /preview?commit=sha 로 특정 커밋 시점의 문서가 블록별 HTML로 렌더링된다
