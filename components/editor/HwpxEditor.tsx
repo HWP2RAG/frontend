@@ -4,22 +4,30 @@
  * Uses Yjs Collaboration + CollaborationCursor for real-time editing.
  * SSR-safe: exported via next/dynamic with ssr: false.
  *
+ * Integrates PresenceOverlay, SaveVersionButton, and EditorToolbar
+ * in a unified layout with status indicators.
+ *
  * CRITICAL: Collaboration field MUST be 'default' to match backend Hocuspocus config.
  */
 
 'use client';
 
+import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { allHwpxExtensions } from './extensions';
 import { EditorToolbar } from './EditorToolbar';
+import { PresenceOverlay } from './PresenceOverlay';
+import { SaveVersionButton } from './SaveVersionButton';
 import { useHocuspocus } from '@/hooks/use-hocuspocus';
 import { useAuthStore } from '@/stores/auth-store';
+import { useEditorStore } from '@/stores/editor-store';
 import '@/styles/editor.css';
 
 interface HwpxEditorProps {
   documentId: string;
+  branch?: string;
 }
 
 /** 8-color palette for collaboration cursors */
@@ -36,9 +44,10 @@ function hashToIndex(str: string, mod: number): number {
   return Math.abs(hash) % mod;
 }
 
-function HwpxEditorInner({ documentId }: HwpxEditorProps) {
+function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
   const { provider, ydoc, status, error } = useHocuspocus(documentId);
   const user = useAuthStore((s) => s.user);
+  const editorStatus = useEditorStore((s) => s.status);
 
   const userName = user?.name || 'Anonymous';
   const userId = user?.id || 'anon';
@@ -72,16 +81,30 @@ function HwpxEditorInner({ documentId }: HwpxEditorProps) {
     [provider],
   );
 
-  if (error) {
+  // Cleanup: reset editor store on unmount
+  useEffect(() => {
+    return () => {
+      useEditorStore.getState().reset();
+    };
+  }, []);
+
+  if (error || editorStatus === 'error') {
     return (
       <div className="rounded-md border border-destructive p-4 text-destructive">
         <p className="font-medium">Connection Error</p>
-        <p className="text-sm">{error}</p>
+        <p className="text-sm">{error || 'Unknown error'}</p>
+        <button
+          type="button"
+          onClick={() => window.location.reload()}
+          className="mt-2 text-sm underline hover:no-underline"
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
-  if (status === 'connecting') {
+  if (status === 'connecting' || editorStatus === 'connecting') {
     return (
       <div className="flex items-center justify-center min-h-[500px] text-muted-foreground">
         <div className="flex items-center gap-2">
@@ -94,7 +117,16 @@ function HwpxEditorInner({ documentId }: HwpxEditorProps) {
 
   return (
     <div className="rounded-md border">
-      <EditorToolbar editor={editor} />
+      {/* Top bar: toolbar + presence + save */}
+      <div className="flex items-center justify-between border-b">
+        <EditorToolbar editor={editor} />
+        <div className="flex items-center gap-2 px-2">
+          <PresenceOverlay provider={provider} />
+          <SaveVersionButton documentId={documentId} branch={branch} />
+        </div>
+      </div>
+
+      {/* Editor content */}
       <EditorContent editor={editor} />
     </div>
   );
