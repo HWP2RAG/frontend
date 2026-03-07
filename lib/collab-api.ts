@@ -782,3 +782,19 @@ export async function fetchGovernanceHistory(
     {}
   );
 }
+
+// ─── Snapshot endpoint (VCS commit from live Y.Doc) ────────────────
+
+export async function snapshotDocument(
+  documentId: string,
+  branch: string = "main",
+  message: string = "Manual save",
+): Promise<{ commitSha256: string | null }> {
+  return apiFetch<{ commitSha256: string | null }>(
+    `/v1/collab/documents/${documentId}/snapshot`,
+    {
+      method: "POST",
+      body: JSON.stringify({ branch, message }),
+    },
+  );
+}
