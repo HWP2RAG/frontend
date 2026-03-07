@@ -1,13 +1,18 @@
 /**
  * Main HWPX TipTap WYSIWYG editor component.
  *
- * Uses Yjs Collaboration + CollaborationCursor for real-time editing.
+ * Uses Yjs Collaboration for real-time editing.
  * SSR-safe: exported via next/dynamic with ssr: false.
  *
  * Integrates PresenceOverlay, SaveVersionButton, and EditorToolbar
  * in a unified layout with status indicators.
  *
  * CRITICAL: Collaboration field MUST be 'default' to match backend Hocuspocus config.
+ *
+ * NOTE: CollaborationCursor (remote cursor display) is deferred to Phase 85.
+ * y-prosemirror's yCursorPlugin crashes during EditorState.reconfigure when
+ * ySyncPluginKey.getState() returns undefined (plugin init ordering issue).
+ * Remote presence is still shown via PresenceOverlay (awareness-based avatars).
  */
 
 'use client';
@@ -15,13 +20,11 @@
 import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Collaboration from '@tiptap/extension-collaboration';
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import { allHwpxExtensions } from './extensions';
 import { EditorToolbar } from './EditorToolbar';
 import { PresenceOverlay } from './PresenceOverlay';
 import { SaveVersionButton } from './SaveVersionButton';
 import { useHocuspocus } from '@/hooks/use-hocuspocus';
-import { useAuthStore } from '@/stores/auth-store';
 import { useEditorStore } from '@/stores/editor-store';
 import '@/styles/editor.css';
 
@@ -30,31 +33,11 @@ interface HwpxEditorProps {
   branch?: string;
 }
 
-/** 8-color palette for collaboration cursors */
-const CURSOR_COLORS = [
-  '#f44336', '#e91e63', '#9c27b0', '#673ab7',
-  '#3f51b5', '#2196f3', '#009688', '#4caf50',
-];
-
-function hashToIndex(str: string, mod: number): number {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = (hash * 31 + str.charCodeAt(i)) | 0;
-  }
-  return Math.abs(hash) % mod;
-}
-
 function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
   const { provider, ydoc } = useHocuspocus(documentId);
-  const user = useAuthStore((s) => s.user);
   const editorStatus = useEditorStore((s) => s.status);
   const editorError = useEditorStore((s) => s.error);
 
-  const userName = user?.name || 'Anonymous';
-  const userId = user?.id || 'anon';
-  const cursorColor = CURSOR_COLORS[hashToIndex(userId, CURSOR_COLORS.length)];
-
-  // Provider is always available synchronously — no conditional extension inclusion.
   const editor = useEditor(
     {
       extensions: [
@@ -62,10 +45,6 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
         Collaboration.configure({
           document: ydoc,
           field: 'default',
-        }),
-        CollaborationCursor.configure({
-          provider,
-          user: { name: userName, color: cursorColor },
         }),
       ],
       editorProps: {
@@ -89,14 +68,14 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
   if (editorError || editorStatus === 'error') {
     return (
       <div className="rounded-md border border-destructive p-4 text-destructive">
-        <p className="font-medium">Connection Error</p>
+        <p className="font-medium">연결 오류</p>
         <p className="text-sm">{editorError || 'Unknown error'}</p>
         <button
           type="button"
           onClick={() => window.location.reload()}
           className="mt-2 text-sm underline hover:no-underline"
         >
-          Retry
+          다시 시도
         </button>
       </div>
     );

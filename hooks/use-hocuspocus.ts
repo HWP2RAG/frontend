@@ -2,7 +2,7 @@
  * HocuspocusProvider lifecycle management hook.
  *
  * Creates Y.Doc + HocuspocusProvider synchronously so the provider
- * is available on first render (required by CollaborationCursor).
+ * is available on first render (required by Collaboration extension).
  * Manages connection lifecycle with JWT auth token refresh.
  * Wires awareness changes to useEditorStore for PresenceOverlay.
  */
@@ -15,9 +15,11 @@ import * as Y from 'yjs';
 import { useAuthStore } from '@/stores/auth-store';
 import { useEditorStore, type ConnectedUser } from '@/stores/editor-store';
 
+// Backend WebSocket path: /api/collab/ws/:documentId
+// HocuspocusProvider appends /${name} to the URL automatically
 const WS_URL =
   process.env.NEXT_PUBLIC_COLLAB_WS_URL ||
-  'wss://hwptorag-server-production.up.railway.app/collab';
+  'wss://hwptorag-server-production.up.railway.app/api/collab/ws';
 
 export type ConnectionStatus = 'connecting' | 'connected' | 'disconnected' | 'error';
 
@@ -34,11 +36,7 @@ export function useHocuspocus(documentId: string): UseHocuspocusReturn {
   const ydoc = ydocRef.current;
 
   // Create provider synchronously via useMemo so it's available on first render.
-  // CollaborationCursor requires the provider at editor init time.
   const provider = useMemo(() => {
-    const editorStore = useEditorStore.getState();
-    editorStore.setStatus('connecting');
-
     return new HocuspocusProvider({
       url: WS_URL,
       name: documentId,
@@ -60,6 +58,11 @@ export function useHocuspocus(documentId: string): UseHocuspocusReturn {
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [documentId]);
+
+  // Set initial status via effect (not during render) to avoid setState-during-render warning
+  useEffect(() => {
+    useEditorStore.getState().setStatus('connecting');
+  }, [provider]);
 
   // Wire awareness changes to editor store
   useEffect(() => {
