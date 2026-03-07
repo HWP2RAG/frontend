@@ -6,6 +6,12 @@
 
 **Requirements:** MERGE-01, MERGE-02, MERGE-03, MERGE-04
 
+**Plans:** 2 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — Mock fixtures with conflict variants + merge store TDD tests
+- [ ] 06-02-PLAN.md — Port merge page to new route + MR merge navigation + page tests
+
 **Success Criteria:**
 1. merge 결과 페이지에서 자동 병합 수, 충돌 수, 충돌 상세를 확인할 수 있다
 2. 각 충돌에 대해 accept_local/accept_remote/manual_edit로 해결할 수 있다
