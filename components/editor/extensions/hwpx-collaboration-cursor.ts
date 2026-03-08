@@ -60,6 +60,8 @@ export const HwpxCollaborationCursor = Extension.create<HwpxCollaborationCursorO
   addStorage() {
     return {
       users: [] as Array<{ clientId: number; user: CursorUser }>,
+      _awarenessHandler: null as (() => void) | null,
+      _awareness: null as Awareness | null,
     };
   },
 
@@ -80,6 +82,15 @@ export const HwpxCollaborationCursor = Extension.create<HwpxCollaborationCursorO
     };
   },
 
+  onDestroy() {
+    const { _awareness, _awarenessHandler } = this.storage;
+    if (_awareness && _awarenessHandler) {
+      _awareness.off('change', _awarenessHandler);
+      this.storage._awarenessHandler = null;
+      this.storage._awareness = null;
+    }
+  },
+
   addProseMirrorPlugins() {
     const awareness = this.options.provider?.awareness;
 
@@ -94,7 +105,7 @@ export const HwpxCollaborationCursor = Extension.create<HwpxCollaborationCursorO
     // Set local user state so remote clients can render our cursor
     awareness.setLocalStateField('user', this.options.user);
 
-    // Track remote users in storage
+    // Track remote users in storage (with cleanup ref for onDestroy)
     const storage = this.storage;
     const updateUsers = () => {
       const users: Array<{ clientId: number; user: CursorUser }> = [];
@@ -107,6 +118,8 @@ export const HwpxCollaborationCursor = Extension.create<HwpxCollaborationCursorO
       storage.users = users;
     };
     awareness.on('change', updateUsers);
+    storage._awarenessHandler = updateUsers;
+    storage._awareness = awareness;
     updateUsers();
 
     return [

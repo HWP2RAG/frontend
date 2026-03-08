@@ -38,10 +38,10 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
   const editorStatus = useEditorStore((s) => s.status);
   const editorError = useEditorStore((s) => s.error);
 
-  // Derive user name/color for cursor rendering (same logic as use-hocuspocus.ts)
-  const authState = useAuthStore.getState();
-  const userName = authState.user?.name || 'Anonymous';
-  const userColor = '#' + (authState.user?.id || 'anon').slice(0, 6).padEnd(6, '0');
+  // Derive user name/color reactively from auth store
+  const authUser = useAuthStore((s) => s.user);
+  const userName = authUser?.name || 'Anonymous';
+  const userColor = '#' + (authUser?.id || 'anon').slice(0, 6).padEnd(6, '0');
 
   const editor = useEditor(
     {
@@ -64,7 +64,7 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
       },
       immediatelyRender: false,
     },
-    [ydoc, provider],
+    [ydoc, provider, userName, userColor],
   );
 
   // Cleanup: reset editor store on unmount
