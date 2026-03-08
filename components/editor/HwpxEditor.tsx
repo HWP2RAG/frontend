@@ -9,10 +9,9 @@
  *
  * CRITICAL: Collaboration field MUST be 'default' to match backend Hocuspocus config.
  *
- * NOTE: CollaborationCursor (remote cursor display) is deferred to Phase 85.
- * y-prosemirror's yCursorPlugin crashes during EditorState.reconfigure when
- * ySyncPluginKey.getState() returns undefined (plugin init ordering issue).
- * Remote presence is still shown via PresenceOverlay (awareness-based avatars).
+ * Inline collaboration cursors use HwpxCollaborationCursor (custom extension
+ * importing yCursorPlugin from @tiptap/y-tiptap to match ySyncPluginKey).
+ * Remote presence is also shown via PresenceOverlay (awareness-based avatars).
  */
 
 'use client';
@@ -20,12 +19,13 @@
 import { useEffect } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Collaboration from '@tiptap/extension-collaboration';
-import { allHwpxExtensions } from './extensions';
+import { allHwpxExtensions, HwpxCollaborationCursor } from './extensions';
 import { EditorToolbar } from './EditorToolbar';
 import { PresenceOverlay } from './PresenceOverlay';
 import { SaveVersionButton } from './SaveVersionButton';
 import { useHocuspocus } from '@/hooks/use-hocuspocus';
 import { useEditorStore } from '@/stores/editor-store';
+import { useAuthStore } from '@/stores/auth-store';
 import '@/styles/editor.css';
 
 interface HwpxEditorProps {
@@ -38,6 +38,11 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
   const editorStatus = useEditorStore((s) => s.status);
   const editorError = useEditorStore((s) => s.error);
 
+  // Derive user name/color for cursor rendering (same logic as use-hocuspocus.ts)
+  const authState = useAuthStore.getState();
+  const userName = authState.user?.name || 'Anonymous';
+  const userColor = '#' + (authState.user?.id || 'anon').slice(0, 6).padEnd(6, '0');
+
   const editor = useEditor(
     {
       extensions: [
@@ -45,6 +50,10 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
         Collaboration.configure({
           document: ydoc,
           field: 'default',
+        }),
+        HwpxCollaborationCursor.configure({
+          provider,
+          user: { name: userName, color: userColor },
         }),
       ],
       editorProps: {
@@ -55,7 +64,7 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
       },
       immediatelyRender: false,
     },
-    [ydoc],
+    [ydoc, provider],
   );
 
   // Cleanup: reset editor store on unmount

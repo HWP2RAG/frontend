@@ -75,3 +75,25 @@
   user-select: none;
   pointer-events: none;
 }
+
+/* ─── Fallback: @tiptap/y-tiptap default cursor class ────── */
+
+.ProseMirror-yjs-cursor {
+  position: relative;
+  border-left: 2px solid orange;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  word-break: normal;
+}
+
+/* ─── Remote selection highlight (fallback for inline styles) */
+
+.yRemoteSelection {
+  background-color: rgba(250, 129, 0, 0.5);
+}
+
+.yRemoteSelectionHead {
+  position: absolute;
+  border-left: 2px solid orange;
+}

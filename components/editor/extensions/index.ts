@@ -17,6 +17,7 @@ import { HwpxOpaque } from './hwpx-opaque';
 import { HwpxInlineOpaque } from './hwpx-inline-opaque';
 import { HwpxCharMeta } from './hwpx-char-meta';
 import { RunMeta } from './run-meta';
+import { HwpxCollaborationCursor } from './hwpx-collaboration-cursor';
 
 import Text from '@tiptap/extension-text';
 import Bold from '@tiptap/extension-bold';
@@ -38,6 +39,7 @@ export {
   HwpxInlineOpaque,
   HwpxCharMeta,
   RunMeta,
+  HwpxCollaborationCursor,
 };
 
 /**
