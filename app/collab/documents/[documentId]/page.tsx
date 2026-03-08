@@ -387,6 +387,14 @@ export default function DocumentFullViewPage() {
       {/* ── Bottom Toolbar ──────────────────────────────────────── */}
       <footer className="shrink-0 border-t border-border px-4 py-2 flex items-center gap-3">
         <Link
+          href={`/collab/${documentId}/edit`}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+          실시간 편집
+        </Link>
+
+        <Link
           href={`/collab/documents/${documentId}/history`}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md border border-border hover:bg-accent transition-colors"
         >
