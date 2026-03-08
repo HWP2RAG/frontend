@@ -783,6 +783,46 @@ export async function fetchGovernanceHistory(
   );
 }
 
+// ─── Cherry-pick types ─────────────────────────────────────────────
+
+export interface CherryPickResultResponse {
+  commitSha256: string;
+  cherryPickedCount: number;
+  styleDependencies: {
+    charPrIds: string[];
+    paraPrIds: string[];
+    verified: boolean;
+  };
+  metadata: {
+    type: "cherry-pick";
+    sourceBranch: string;
+    sourceCommitSha256: string;
+    selectedBlockUuids: string[];
+    styleDependencies: {
+      charPrIds: string[];
+      paraPrIds: string[];
+      verified: boolean;
+    };
+  };
+}
+
+// ─── Cherry-pick endpoint ──────────────────────────────────────────
+
+export async function executeCherryPick(
+  documentId: string,
+  sourceBranch: string,
+  targetBranch: string,
+  selectedBlockUuids: string[],
+): Promise<CherryPickResultResponse> {
+  return apiFetch<CherryPickResultResponse>(
+    `/v1/collab/documents/${documentId}/cherry-pick`,
+    {
+      method: "POST",
+      body: JSON.stringify({ sourceBranch, targetBranch, selectedBlockUuids }),
+    },
+  );
+}
+
 // ─── Snapshot endpoint (VCS commit from live Y.Doc) ────────────────
 
 export async function snapshotDocument(
