@@ -154,7 +154,7 @@ export default function ProjectDetailPage() {
                           <h3 className="text-sm font-medium">{doc.name}</h3>
                           {hasContent ? (
                             <p className="text-xs text-muted-foreground mt-0.5">
-                              수정: {new Date(doc.updatedAt).toLocaleDateString("ko-KR")}
+                              수정: {new Date(doc.updatedAt!).toLocaleDateString("ko-KR")}
                             </p>
                           ) : (
                             <p className="text-xs text-yellow-600 dark:text-yellow-400 mt-0.5">
