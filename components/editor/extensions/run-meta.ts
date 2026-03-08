@@ -1,7 +1,7 @@
 /**
  * TipTap mark for preserving HWPX run boundaries during round-trip.
  *
- * Metadata-only mark: NO parseHTML/renderHTML.
+ * Transparent metadata mark: renders as invisible <span> with data attrs.
  * Always coexists with other marks (excludes: '').
  * Used solely by hwpx-schema.service for reconstructing original
  * <hp:run> structure on PM -> HWPX conversion.
@@ -17,17 +17,33 @@ export const RunMeta = Mark.create({
 
   addAttributes() {
     return {
-      _runIndex: { default: 0 },
-      _runCharPrIDRef: { default: '0' },
-      _runExtraAttrs: { default: null },
+      _runIndex: {
+        default: 0,
+        parseHTML: (el: HTMLElement) => parseInt(el.getAttribute('data-run-index') ?? '0', 10),
+        renderHTML: (attrs: Record<string, unknown>) => ({ 'data-run-index': String(attrs._runIndex) }),
+      },
+      _runCharPrIDRef: {
+        default: '0',
+        parseHTML: (el: HTMLElement) => el.getAttribute('data-run-charpr') ?? '0',
+        renderHTML: (attrs: Record<string, unknown>) => ({ 'data-run-charpr': attrs._runCharPrIDRef }),
+      },
+      _runExtraAttrs: {
+        default: null,
+        parseHTML: (el: HTMLElement) => {
+          const raw = el.getAttribute('data-run-extra');
+          return raw ? JSON.parse(raw) : null;
+        },
+        renderHTML: (attrs: Record<string, unknown>) =>
+          attrs._runExtraAttrs ? { 'data-run-extra': JSON.stringify(attrs._runExtraAttrs) } : {},
+      },
     };
   },
 
-  renderHTML() {
-    return ['span', { 'data-run-meta': '' }, 0];
+  renderHTML({ HTMLAttributes }) {
+    return ['span', HTMLAttributes, 0];
   },
 
   parseHTML() {
-    return [{ tag: 'span[data-run-meta]' }];
+    return [{ tag: 'span[data-run-index]' }];
   },
 });

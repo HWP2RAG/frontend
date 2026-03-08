@@ -1,7 +1,7 @@
 /**
  * TipTap mark for HWPX character metadata (charPrIDRef).
  *
- * Metadata-only mark: NO parseHTML/renderHTML.
+ * Transparent metadata mark: renders as invisible <span> with data attrs.
  * Always coexists with other marks (excludes: '').
  * Carries original charPrIDRef for round-trip reconstruction.
  */
@@ -14,12 +14,16 @@ export const HwpxCharMeta = Mark.create({
 
   addAttributes() {
     return {
-      charPrIDRef: { default: '0' },
+      charPrIDRef: {
+        default: '0',
+        parseHTML: (el: HTMLElement) => el.getAttribute('data-charpr') ?? '0',
+        renderHTML: (attrs: Record<string, unknown>) => ({ 'data-charpr': attrs.charPrIDRef }),
+      },
     };
   },
 
   renderHTML({ HTMLAttributes }) {
-    return ['span', { 'data-charpr': HTMLAttributes.charPrIDRef }, 0];
+    return ['span', HTMLAttributes, 0];
   },
 
   parseHTML() {
