@@ -34,7 +34,7 @@ export function useHocuspocus(documentId: string): UseHocuspocusReturn {
     const doc = new Y.Doc();
 
     const prov = new HocuspocusProvider({
-      url: WS_URL,
+      url: `${WS_URL}/${documentId}`,
       name: documentId,
       document: doc,
       token: async () => {
