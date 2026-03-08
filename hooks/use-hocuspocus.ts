@@ -15,7 +15,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useEditorStore, type ConnectedUser } from '@/stores/editor-store';
 
 // Backend WebSocket path: /api/collab/ws/:documentId
-// HocuspocusProvider appends /${name} to the URL automatically
+// HocuspocusProvider v2 does NOT auto-append name to URL; we include documentId explicitly below
 const WS_URL =
   process.env.NEXT_PUBLIC_COLLAB_WS_URL ||
   'wss://hwptorag-server-production.up.railway.app/api/collab/ws';
