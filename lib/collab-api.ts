@@ -19,7 +19,7 @@ export interface DocumentListItem {
   id: string;
   name: string;
   createdAt: string;
-  updatedAt: string;
+  updatedAt: string | null;
 }
 
 export interface BranchListItem {
