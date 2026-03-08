@@ -22,4 +22,12 @@ export const RunMeta = Mark.create({
       _runExtraAttrs: { default: null },
     };
   },
+
+  renderHTML() {
+    return ['span', { 'data-run-meta': '' }, 0];
+  },
+
+  parseHTML() {
+    return [{ tag: 'span[data-run-meta]' }];
+  },
 });

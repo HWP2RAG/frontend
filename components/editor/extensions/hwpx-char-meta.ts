@@ -17,4 +17,12 @@ export const HwpxCharMeta = Mark.create({
       charPrIDRef: { default: '0' },
     };
   },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['span', { 'data-charpr': HTMLAttributes.charPrIDRef }, 0];
+  },
+
+  parseHTML() {
+    return [{ tag: 'span[data-charpr]' }];
+  },
 });
