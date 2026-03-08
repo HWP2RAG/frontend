@@ -7,6 +7,12 @@ interface BlockDiffListProps {
   selectedBlockUuid: string | null;
   onBlockSelect: (blockDiff: BlockDiff) => void;
   summary: { added: number; deleted: number; modified: number; moved: number };
+  // Cherry-pick props (optional -- cherry-pick mode off when absent)
+  cherryPickMode?: boolean;
+  checkedBlocks?: Set<string>;
+  onToggleCheck?: (blockUuid: string) => void;
+  onSelectAll?: () => void;
+  onClearAll?: () => void;
 }
 
 const STATUS_CONFIG: Record<
@@ -49,8 +55,14 @@ export function BlockDiffList({
   selectedBlockUuid,
   onBlockSelect,
   summary,
+  cherryPickMode,
+  checkedBlocks,
+  onToggleCheck,
+  onSelectAll,
+  onClearAll,
 }: BlockDiffListProps) {
   const total = summary.added + summary.deleted + summary.modified + summary.moved;
+  const checkedCount = checkedBlocks?.size ?? 0;
 
   return (
     <div className="flex flex-col h-full">
@@ -81,6 +93,29 @@ export function BlockDiffList({
             </span>
           )}
         </div>
+        {cherryPickMode && (
+          <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border">
+            <span className="text-xs font-medium text-primary">
+              {checkedCount}개 선택됨
+            </span>
+            <div className="ml-auto flex gap-1">
+              <button
+                type="button"
+                onClick={onSelectAll}
+                className="text-xs px-2 py-0.5 rounded bg-muted hover:bg-muted/80 transition-colors"
+              >
+                전체 선택
+              </button>
+              <button
+                type="button"
+                onClick={onClearAll}
+                className="text-xs px-2 py-0.5 rounded bg-muted hover:bg-muted/80 transition-colors"
+              >
+                선택 해제
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Block list */}
@@ -95,16 +130,32 @@ export function BlockDiffList({
               const config = STATUS_CONFIG[diff.status];
               const isSelected = diff.blockUuid === selectedBlockUuid;
 
+              const isChecked = cherryPickMode && (checkedBlocks?.has(diff.blockUuid) ?? false);
+
               return (
                 <li key={diff.blockUuid}>
-                  <button
-                    className={`w-full text-left p-3 border-l-4 transition-colors ${config.border} ${
-                      isSelected
-                        ? `${config.bg} ring-1 ring-inset ring-primary/20`
-                        : "hover:bg-muted/50"
-                    }`}
-                    onClick={() => onBlockSelect(diff)}
-                  >
+                  <div className={`flex items-start ${isChecked ? "ring-2 ring-inset ring-primary/30" : ""}`}>
+                    {cherryPickMode && (
+                      <div className="flex items-center pl-2 pt-3.5">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            onToggleCheck?.(diff.blockUuid);
+                          }}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                      </div>
+                    )}
+                    <button
+                      className={`flex-1 text-left p-3 border-l-4 transition-colors ${config.border} ${
+                        isSelected
+                          ? `${config.bg} ring-1 ring-inset ring-primary/20`
+                          : "hover:bg-muted/50"
+                      }`}
+                      onClick={() => onBlockSelect(diff)}
+                    >
                     <div className="flex items-center justify-between mb-1">
                       <code className="text-xs font-mono text-muted-foreground">
                         {truncateUuid(diff.blockUuid)}
@@ -123,7 +174,8 @@ export function BlockDiffList({
                         </span>
                       )}
                     </div>
-                  </button>
+                    </button>
+                  </div>
                 </li>
               );
             })}

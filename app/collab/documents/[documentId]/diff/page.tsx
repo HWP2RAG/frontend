@@ -15,6 +15,8 @@ import type {
   BlockDiff,
 } from "@/lib/collab-api";
 import { BlockDiffList } from "@/components/collab/block-diff-list";
+import { CherryPickPanel } from "@/components/collab/cherry-pick-panel";
+import { useCherryPickStore } from "@/stores/cherry-pick-store";
 
 export default function DocumentDiffPage() {
   const { documentId } = useParams<{ documentId: string }>();
@@ -34,6 +36,8 @@ export default function DocumentDiffPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingBlobs, setIsLoadingBlobs] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [cherryPickMode, setCherryPickMode] = useState(false);
+  const { selectedBlocks, toggleBlock, selectAll, clearSelection, reset: resetCherryPick } = useCherryPickStore();
 
   // Load branches
   useEffect(() => {
@@ -143,6 +147,23 @@ export default function DocumentDiffPage() {
             >
               비교
             </button>
+            {diffResult && (
+              <button
+                onClick={() => {
+                  setCherryPickMode((prev) => {
+                    if (prev) resetCherryPick();
+                    return !prev;
+                  });
+                }}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition-colors ${
+                  cherryPickMode
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                Cherry-pick
+              </button>
+            )}
           </div>
         )}
 
@@ -164,23 +185,40 @@ export default function DocumentDiffPage() {
       {/* Content */}
       <div className="flex-1 min-h-0 grid grid-cols-[280px_1fr]">
         {/* Block list sidebar */}
-        <aside className="border-r border-border overflow-hidden">
-          {isLoading ? (
-            <div className="p-3 space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="h-12 bg-muted animate-pulse rounded" />
-              ))}
-            </div>
-          ) : diffResult ? (
-            <BlockDiffList
-              diffs={diffResult.diffs}
-              selectedBlockUuid={selectedBlock?.blockUuid ?? null}
-              onBlockSelect={handleBlockSelect}
-              summary={diffResult.summary}
-            />
-          ) : (
-            <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
-              {isBranchMode ? "브랜치를 선택하고 비교를 클릭하세요" : "로딩 중..."}
+        <aside className="border-r border-border overflow-hidden flex flex-col">
+          <div className="flex-1 overflow-y-auto">
+            {isLoading ? (
+              <div className="p-3 space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="h-12 bg-muted animate-pulse rounded" />
+                ))}
+              </div>
+            ) : diffResult ? (
+              <BlockDiffList
+                diffs={diffResult.diffs}
+                selectedBlockUuid={selectedBlock?.blockUuid ?? null}
+                onBlockSelect={handleBlockSelect}
+                summary={diffResult.summary}
+                cherryPickMode={cherryPickMode}
+                checkedBlocks={selectedBlocks}
+                onToggleCheck={toggleBlock}
+                onSelectAll={() => selectAll(diffResult.diffs.map((d) => d.blockUuid))}
+                onClearAll={clearSelection}
+              />
+            ) : (
+              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                {isBranchMode ? "브랜치를 선택하고 비교를 클릭하세요" : "로딩 중..."}
+              </div>
+            )}
+          </div>
+          {cherryPickMode && diffResult && (
+            <div className="shrink-0 border-t border-border">
+              <CherryPickPanel
+                documentId={documentId}
+                sourceBranch={targetBranch}
+                targetBranch={baseBranch}
+                totalDiffs={diffResult.diffs.length}
+              />
             </div>
           )}
         </aside>
