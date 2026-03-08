@@ -27,4 +27,8 @@ export const HwpxTable = Table.extend({
       tblMeta: { default: {} },
     };
   },
+
+  renderHTML({ HTMLAttributes }) {
+    return ['table', { ...HTMLAttributes, 'data-hwpx-table': '' }, 0];
+  },
 });

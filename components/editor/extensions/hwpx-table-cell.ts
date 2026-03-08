@@ -34,6 +34,12 @@ export const HwpxTableCell = TableCell.extend({
       ...hwpxCellAttrs,
     };
   },
+
+  renderHTML({ HTMLAttributes, node }) {
+    const meta = node.attrs.cellMeta as Record<string, unknown> | undefined;
+    const bgStyle = meta?.bgColor ? `background-color: ${meta.bgColor}` : '';
+    return ['td', { ...HTMLAttributes, ...(bgStyle ? { style: bgStyle } : {}) }, 0];
+  },
 });
 
 export const HwpxTableHeaderCell = TableHeader.extend({
@@ -45,5 +51,11 @@ export const HwpxTableHeaderCell = TableHeader.extend({
       ...this.parent?.(),
       ...hwpxCellAttrs,
     };
+  },
+
+  renderHTML({ HTMLAttributes, node }) {
+    const meta = node.attrs.cellMeta as Record<string, unknown> | undefined;
+    const bgStyle = meta?.bgColor ? `background-color: ${meta.bgColor}` : '';
+    return ['th', { ...HTMLAttributes, ...(bgStyle ? { style: bgStyle } : {}) }, 0];
   },
 });

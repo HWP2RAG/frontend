@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Noto_Serif_KR, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import { MSWProvider } from "@/components/msw-provider";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -18,6 +18,20 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const notoSerifKr = Noto_Serif_KR({
+  variable: "--font-noto-serif-kr",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
+const notoSansKr = Noto_Sans_KR({
+  variable: "--font-noto-sans-kr",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  display: "swap",
+});
+
 export const metadata: Metadata = {
   title: "HWPtoRAG",
   description: "HWP 문서를 RAG 파이프라인에 적합한 형태로 변환",
@@ -31,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen`}
+        className={`${geistSans.variable} ${geistMono.variable} ${notoSerifKr.variable} ${notoSansKr.variable} antialiased flex flex-col min-h-screen`}
       >
         <ThemeProvider>
           <GoogleOAuthWrapper>

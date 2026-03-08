@@ -1,29 +1,71 @@
-/* ─── ProseMirror base ─────────────────────────────────────── */
+/*
+ * LEGAL SAFETY: HWPX Format Rendering Guidelines
+ * - Rendering per HWPX/OWPML open format spec = LEGAL (format implementation)
+ * - Table borders/merge/backgrounds = functional elements, not copyrightable
+ * - A4 paper layout = universal document editor pattern
+ * - Fonts: FREE only (Noto Serif KR, Noto Sans KR) - NO Hancom proprietary fonts
+ * - UI identity: HWPtoRAG brand colors, NOT Hancom blue title bar
+ * - Marketing: "HWP/HWPX document editor" (O), "Hancom compatible" (X)
+ */
+
+/* --- A4 Paper container -------------------------------------------------- */
+
+.paper-container {
+  max-width: 210mm;
+  min-height: 297mm;
+  margin: 2rem auto;
+  padding: 20mm 15mm;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+}
+
+.dark .paper-container {
+  background: hsl(var(--card, 222 47% 11%));
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* --- ProseMirror base ---------------------------------------------------- */
 
 .ProseMirror {
   outline: none;
   min-height: 500px;
+  font-family: var(--font-noto-serif-kr), 'Noto Serif KR', 'Batang', serif;
+  font-size: 10pt;
+  line-height: 1.6;
+  color: hsl(var(--foreground, 222 47% 11%));
 }
 
 .ProseMirror p {
   margin: 0.25em 0;
 }
 
-/* ─── Table styles ────────────────────────────────────────── */
+/* Paragraph alignment (rendered via inline style from hwpx-paragraph renderHTML) */
+.ProseMirror p[style*="text-align: center"] { text-align: center; }
+.ProseMirror p[style*="text-align: right"] { text-align: right; }
+.ProseMirror p[style*="text-align: justify"] { text-align: justify; }
+
+/* --- Table styles -------------------------------------------------------- */
 
 .ProseMirror table {
   border-collapse: collapse;
   width: 100%;
   margin: 0.5em 0;
-  table-layout: auto;
+  table-layout: fixed;
 }
 
 .ProseMirror td,
 .ProseMirror th {
-  border: 1px solid hsl(var(--border, 220 13% 91%));
-  padding: 0.5em 0.75em;
+  border: 1px solid #333;
+  padding: 6px 10px;
   vertical-align: top;
   min-width: 2em;
+}
+
+/* Empty cell placeholder */
+.ProseMirror td:empty::after,
+.ProseMirror th:empty::after {
+  content: '\00a0';
 }
 
 .ProseMirror th {
@@ -31,12 +73,18 @@
   background: hsl(var(--muted, 220 14% 96%));
 }
 
+/* Dark mode table borders */
+.dark .ProseMirror td,
+.dark .ProseMirror th {
+  border-color: hsl(var(--border, 217 19% 27%));
+}
+
 /* Selected cell highlight */
 .ProseMirror .selectedCell {
   background: hsl(var(--primary, 222 47% 51%) / 0.1);
 }
 
-/* ─── Opaque block styles ─────────────────────────────────── */
+/* --- Opaque block styles ------------------------------------------------- */
 
 .hwpx-opaque-inline {
   display: inline-flex;
@@ -50,7 +98,7 @@
   user-select: none;
 }
 
-/* ─── Collaboration cursor ────────────────────────────────── */
+/* --- Collaboration cursor ------------------------------------------------ */
 
 .collaboration-cursor__caret {
   position: relative;
@@ -76,7 +124,7 @@
   pointer-events: none;
 }
 
-/* ─── Fallback: @tiptap/y-tiptap default cursor class ────── */
+/* --- Fallback: @tiptap/y-tiptap default cursor class --------------------- */
 
 .ProseMirror-yjs-cursor {
   position: relative;
@@ -87,7 +135,7 @@
   word-break: normal;
 }
 
-/* ─── Remote selection highlight (fallback for inline styles) */
+/* --- Remote selection highlight (fallback for inline styles) ------------- */
 
 .yRemoteSelection {
   background-color: rgba(250, 129, 0, 0.5);

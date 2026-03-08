@@ -58,8 +58,7 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
       ],
       editorProps: {
         attributes: {
-          class:
-            'prose prose-sm dark:prose-invert max-w-none min-h-[500px] p-4 focus:outline-none',
+          class: 'max-w-none min-h-[500px] focus:outline-none',
         },
       },
       immediatelyRender: false,
@@ -115,8 +114,12 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
         </div>
       )}
 
-      {/* Editor content */}
-      <EditorContent editor={editor} />
+      {/* Editor content — A4 paper container */}
+      <div className="bg-muted/30 p-4 overflow-auto">
+        <div className="paper-container">
+          <EditorContent editor={editor} />
+        </div>
+      </div>
     </div>
   );
 }

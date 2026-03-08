@@ -33,7 +33,20 @@ export const HwpxParagraph = Node.create({
     return [{ tag: 'p[data-hwpx-paragraph]' }];
   },
 
-  renderHTML({ HTMLAttributes }) {
-    return ['p', { ...HTMLAttributes, 'data-hwpx-paragraph': '' }, 0];
+  renderHTML({ HTMLAttributes, node }) {
+    const style: string[] = [];
+    const meta = node.attrs.paraMeta as Record<string, unknown> | null;
+    if (meta?.align && meta.align !== 'left') {
+      style.push(`text-align: ${meta.align}`);
+    }
+    if (meta?.lineSpacing) {
+      style.push(`line-height: ${meta.lineSpacing}`);
+    }
+    const attrs = {
+      ...HTMLAttributes,
+      'data-hwpx-paragraph': '',
+      ...(style.length > 0 ? { style: style.join('; ') } : {}),
+    };
+    return ['p', attrs, 0];
   },
 });
