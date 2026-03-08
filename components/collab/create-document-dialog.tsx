@@ -38,12 +38,15 @@ export function CreateDocumentDialog({
   if (!open) return null;
 
   const handleClose = () => {
-    setStep(isExisting ? "upload" : "name");
-    setName(existingDocumentName ?? "");
-    setDocumentId(existingDocumentId ?? null);
-    setFile(null);
-    setError(null);
     onOpenChange(false);
+    // Reset state after dialog closes to avoid flash of "name" step
+    setTimeout(() => {
+      setStep(isExisting ? "upload" : "name");
+      setName(existingDocumentName ?? "");
+      setDocumentId(existingDocumentId ?? null);
+      setFile(null);
+      setError(null);
+    }, 150);
   };
 
   const handleCreateDocument = async (e: React.FormEvent) => {
@@ -88,7 +91,11 @@ export function CreateDocumentDialog({
 
   const handleDone = async () => {
     if (!documentId) return;
-    await onCreated(documentId);
+    try {
+      await onCreated(documentId);
+    } catch {
+      // ignore — close dialog regardless
+    }
     handleClose();
   };
 
