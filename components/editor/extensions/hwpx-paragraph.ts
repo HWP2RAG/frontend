@@ -44,7 +44,7 @@ export const HwpxParagraph = Node.create({
     }
     if (meta?.indent) {
       const indentHwpunit = parseInt(String(meta.indent), 10);
-      if (!isNaN(indentHwpunit) && indentHwpunit > 0) {
+      if (!isNaN(indentHwpunit) && indentHwpunit !== 0) {
         const indentPx = Math.round(indentHwpunit * 96 / 7200);
         style.push(`text-indent: ${indentPx}px`);
       }
