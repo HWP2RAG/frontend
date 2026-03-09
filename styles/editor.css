@@ -18,6 +18,7 @@
   background: white;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 2px;
+  overflow: hidden;
 }
 
 .dark .paper-container {
@@ -53,6 +54,13 @@
   max-width: 100%;
   margin: 0.5em 0;
   table-layout: fixed;
+  overflow: hidden;
+}
+
+/* Override inline colWidth px values — let table-layout: fixed distribute evenly */
+.ProseMirror td[style*="width"],
+.ProseMirror th[style*="width"] {
+  width: auto !important;
 }
 
 .ProseMirror td,
