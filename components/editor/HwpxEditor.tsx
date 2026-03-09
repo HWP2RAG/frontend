@@ -16,7 +16,7 @@
 
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import Collaboration from '@tiptap/extension-collaboration';
 import { allHwpxExtensions, HwpxCollaborationCursor } from './extensions';
@@ -26,6 +26,7 @@ import { SaveVersionButton } from './SaveVersionButton';
 import { useHocuspocus } from '@/hooks/use-hocuspocus';
 import { useEditorStore } from '@/stores/editor-store';
 import { useAuthStore } from '@/stores/auth-store';
+import { initPagePagination } from './plugins/page-pagination';
 import '@/styles/editor.css';
 
 interface HwpxEditorProps {
@@ -73,6 +74,13 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
     };
   }, []);
 
+  // Page pagination: insert visual A4 page gaps
+  const paperRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!paperRef.current) return;
+    return initPagePagination(paperRef.current);
+  }, [editor]);
+
   if (editorError || editorStatus === 'error') {
     return (
       <div className="rounded-md border border-destructive p-4 text-destructive">
@@ -116,7 +124,7 @@ function HwpxEditorInner({ documentId, branch = 'main' }: HwpxEditorProps) {
 
       {/* Editor content — A4 paper container */}
       <div className="bg-muted/30 p-4 overflow-auto">
-        <div className="paper-container">
+        <div className="paper-container" ref={paperRef}>
           <EditorContent editor={editor} />
         </div>
       </div>

@@ -1,166 +1,102 @@
 /**
- * ProseMirror plugin that inserts visual page-break gaps at A4 boundaries.
+ * Page pagination via direct DOM manipulation.
  *
- * How it works:
- * 1. After each DOM update, measure cumulative block heights
- * 2. When cumulative height exceeds A4 content area, insert a widget decoration
- * 3. Also insert gap before paragraphs with pageBreak="1" in paraMeta
- * 4. Uses requestAnimationFrame + debounce to avoid layout thrashing
+ * Scans ProseMirror block children, measures cumulative heights,
+ * and inserts visual gap divs at A4 page boundaries.
  *
- * A4 content area = 297mm - 20mm top padding - 20mm bottom padding ≈ 257mm ≈ 971px @96dpi
- * (paper-container has padding: 20mm 15mm)
+ * A4 content area = 297mm - 20mm top - 20mm bottom = 257mm ≈ 971px @96dpi
  */
 
-import { Plugin, PluginKey } from '@tiptap/pm/state';
-import type { EditorState, Transaction } from '@tiptap/pm/state';
-import { Decoration, DecorationSet } from '@tiptap/pm/view';
-import type { EditorView } from '@tiptap/pm/view';
-import { Extension } from '@tiptap/core';
-
-const PAGE_PAGINATION_KEY = new PluginKey('pagePagination');
-
-/** A4 content height in px (257mm at 96dpi) */
 const A4_CONTENT_HEIGHT_PX = Math.round(257 * 96 / 25.4); // ≈ 971px
+const GAP_CLASS = 'hwpx-page-gap';
 
-function createPageGapWidget(): HTMLElement {
-  const gap = document.createElement('div');
-  gap.className = 'hwpx-page-gap';
-  gap.contentEditable = 'false';
-  gap.setAttribute('aria-hidden', 'true');
-  return gap;
+let rafId: number | null = null;
+
+function clearExistingGaps(container: Element) {
+  container.querySelectorAll(`.${GAP_CLASS}`).forEach((el) => el.remove());
 }
 
-function computePageBreaks(view: EditorView): DecorationSet {
-  const { doc } = view.state;
-  const decorations: Decoration[] = [];
-  const domAtPos = view.domAtPos.bind(view);
+function insertGaps(container: Element) {
+  clearExistingGaps(container);
 
-  if (!view.dom || !view.dom.parentElement) {
-    return DecorationSet.empty;
-  }
+  const children = Array.from(container.children) as HTMLElement[];
+  if (children.length === 0) return;
 
   let cumulativeHeight = 0;
-  let pageNumber = 1;
+  const insertPoints: HTMLElement[] = [];
 
-  doc.forEach((node, offset) => {
-    const meta = node.attrs?.paraMeta as Record<string, unknown> | null;
-    const hasForceBreak = meta?.pageBreak === '1' || meta?.pageBreak === 1;
+  for (const child of children) {
+    // Skip any gap elements we might have leftover
+    if (child.classList.contains(GAP_CLASS)) continue;
 
-    let blockDom: HTMLElement | null = null;
-    try {
-      const domInfo = domAtPos(offset);
-      if (domInfo.node instanceof HTMLElement) {
-        if (domInfo.node === view.dom) {
-          blockDom = domInfo.node.children[domInfo.offset] as HTMLElement | null;
-        } else {
-          blockDom = domInfo.node as HTMLElement;
-        }
-      }
-    } catch {
-      return;
-    }
+    const height = child.offsetHeight;
 
-    if (!blockDom) return;
+    // Check forced pageBreak (data attribute from hwpx-paragraph renderHTML)
+    const isForceBreak = child.getAttribute('data-page-break') === '1';
 
-    const blockHeight = blockDom.getBoundingClientRect().height;
-
-    // Force page break
-    if (hasForceBreak && offset > 0) {
-      decorations.push(
-        Decoration.widget(offset, createPageGapWidget, {
-          side: -1,
-          key: `page-force-${offset}`,
-        }),
-      );
+    if (isForceBreak && cumulativeHeight > 0) {
+      insertPoints.push(child);
       cumulativeHeight = 0;
-      pageNumber++;
     }
 
-    // Natural page break
-    if (cumulativeHeight + blockHeight > A4_CONTENT_HEIGHT_PX && cumulativeHeight > 0) {
-      decorations.push(
-        Decoration.widget(offset, createPageGapWidget, {
-          side: -1,
-          key: `page-${pageNumber}-${offset}`,
-        }),
-      );
-      cumulativeHeight = blockHeight;
-      pageNumber++;
+    if (cumulativeHeight + height > A4_CONTENT_HEIGHT_PX && cumulativeHeight > 0) {
+      insertPoints.push(child);
+      cumulativeHeight = height;
     } else {
-      cumulativeHeight += blockHeight;
+      cumulativeHeight += height;
     }
-  });
+  }
 
-  return DecorationSet.create(doc, decorations);
+  // Insert gap divs before the identified elements
+  for (const el of insertPoints) {
+    const gap = document.createElement('div');
+    gap.className = GAP_CLASS;
+    gap.contentEditable = 'false';
+    gap.setAttribute('aria-hidden', 'true');
+    el.parentNode?.insertBefore(gap, el);
+  }
+}
+
+function scheduleUpdate(container: Element) {
+  if (rafId) cancelAnimationFrame(rafId);
+  rafId = requestAnimationFrame(() => {
+    rafId = null;
+    insertGaps(container);
+  });
 }
 
 /**
- * TipTap extension that adds visual page pagination.
+ * Initialize page pagination on a ProseMirror editor DOM element.
+ * Returns a cleanup function.
  */
-export const PagePagination = Extension.create({
-  name: 'pagePagination',
+export function initPagePagination(editorDom: HTMLElement): () => void {
+  // Find .ProseMirror element
+  const pm =
+    editorDom.classList.contains('ProseMirror')
+      ? editorDom
+      : editorDom.querySelector('.ProseMirror');
 
-  addProseMirrorPlugins() {
-    let pendingUpdate: number | null = null;
-    let currentDecos = DecorationSet.empty;
+  if (!pm) return () => {};
 
-    return [
-      new Plugin({
-        key: PAGE_PAGINATION_KEY,
+  // Initial render
+  setTimeout(() => scheduleUpdate(pm), 300);
 
-        state: {
-          init(): DecorationSet {
-            return DecorationSet.empty;
-          },
-          apply(tr: Transaction, old: DecorationSet): DecorationSet {
-            const metaDecos = tr.getMeta(PAGE_PAGINATION_KEY) as DecorationSet | undefined;
-            if (metaDecos) return metaDecos;
-            if (tr.docChanged) {
-              return old.map(tr.mapping, tr.doc);
-            }
-            return old;
-          },
-        },
+  // Watch for content changes
+  const mutObserver = new MutationObserver(() => {
+    scheduleUpdate(pm);
+  });
+  mutObserver.observe(pm, { childList: true, subtree: true, characterData: true });
 
-        props: {
-          decorations(state: EditorState): DecorationSet {
-            return PAGE_PAGINATION_KEY.getState(state) as DecorationSet;
-          },
-        },
+  // Watch for size changes (images loading, etc.)
+  const resizeObserver = new ResizeObserver(() => {
+    scheduleUpdate(pm);
+  });
+  resizeObserver.observe(pm);
 
-        view(editorView: EditorView) {
-          function scheduleUpdate() {
-            if (pendingUpdate) cancelAnimationFrame(pendingUpdate);
-            pendingUpdate = requestAnimationFrame(() => {
-              pendingUpdate = null;
-              const decos = computePageBreaks(editorView);
-              const tr = editorView.state.tr.setMeta(PAGE_PAGINATION_KEY, decos);
-              tr.setMeta('addToHistory', false);
-              editorView.dispatch(tr);
-            });
-          }
-
-          // Initial computation after mount
-          setTimeout(scheduleUpdate, 200);
-
-          const resizeObserver = new ResizeObserver(() => {
-            scheduleUpdate();
-          });
-          resizeObserver.observe(editorView.dom);
-
-          return {
-            update(view: EditorView, prevState: EditorState) {
-              if (view.state.doc !== prevState.doc) {
-                scheduleUpdate();
-              }
-            },
-            destroy() {
-              if (pendingUpdate) cancelAnimationFrame(pendingUpdate);
-              resizeObserver.disconnect();
-            },
-          };
-        },
-      }),
-    ];
-  },
-});
+  return () => {
+    if (rafId) cancelAnimationFrame(rafId);
+    mutObserver.disconnect();
+    resizeObserver.disconnect();
+    clearExistingGaps(pm);
+  };
+}
