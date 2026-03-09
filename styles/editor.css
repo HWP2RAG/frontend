@@ -36,26 +36,6 @@
   color: hsl(var(--foreground, 222 47% 11%));
 }
 
-/* --- A4 page boundary indicators ----------------------------------------- */
-/* Visual dashed line every ~257mm (A4 297mm minus ~40mm combined margins).
-   Approximate only — exact pagination requires JS content measurement (Phase 87). */
-
-.paper-container .ProseMirror {
-  --page-content-height: 257mm;
-  --page-gap: 24px;
-  background-image: repeating-linear-gradient(
-    to bottom,
-    transparent 0,
-    transparent var(--page-content-height),
-    hsl(var(--border, 217 19% 27%) / 0.3) var(--page-content-height),
-    hsl(var(--border, 217 19% 27%) / 0.3) calc(var(--page-content-height) + 2px),
-    transparent calc(var(--page-content-height) + 2px),
-    transparent calc(var(--page-content-height) + var(--page-gap))
-  );
-  background-size: 100% calc(var(--page-content-height) + var(--page-gap));
-  background-position: 0 0;
-}
-
 .ProseMirror p {
   margin: 0.25em 0;
 }
@@ -70,6 +50,7 @@
 .ProseMirror table {
   border-collapse: collapse;
   width: 100%;
+  max-width: 100%;
   margin: 0.5em 0;
   table-layout: fixed;
 }
@@ -79,7 +60,10 @@
   border: 1px solid #333;
   padding: 6px 10px;
   vertical-align: top;
-  min-width: 2em;
+  min-width: 1em;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  overflow: hidden;
 }
 
 /* Empty cell placeholder */
@@ -107,20 +91,32 @@
 /* --- Section/page break -------------------------------------------------- */
 
 .hwpx-section-break {
-  border-bottom: 2px dashed hsl(var(--border, 217 19% 27%));
-  margin-bottom: 2rem;
-  padding-bottom: 2rem;
-  page-break-after: always;
+  position: relative;
+  padding-bottom: 20mm;
+  margin-bottom: 56px;
+  border-bottom: none;
 }
 
-/* Block-level page break divider (OpaqueNodeView for sectionProperty) */
-.hwpx-page-break {
-  border: none;
-  border-top: 2px dashed hsl(var(--border, 217 19% 27%));
-  margin: 2rem 0;
-  padding: 0;
-  height: 0;
-  page-break-after: always;
+.hwpx-section-break::after {
+  content: '';
+  position: absolute;
+  bottom: -28px;
+  left: calc(-15mm);
+  right: calc(-15mm);
+  height: 56px;
+  background: hsl(var(--muted, 220 14% 96%));
+  box-shadow:
+    0 -3px 6px -3px rgba(0, 0, 0, 0.08),
+    0 3px 6px -3px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.dark .hwpx-section-break::after {
+  background: hsl(var(--background, 222 47% 5%));
+  box-shadow:
+    0 -3px 6px -3px rgba(0, 0, 0, 0.25),
+    0 3px 6px -3px rgba(0, 0, 0, 0.25);
 }
 
 /* --- Opaque block styles ------------------------------------------------- */

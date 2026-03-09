@@ -2,8 +2,8 @@
  * React NodeView for HWPX opaque block nodes.
  *
  * - equation/drawing: show icon + label placeholder
- * - sectionProperty: render as page break divider
- * - header/footer/field/unknown: hidden (no visual output)
+ * - sectionProperty/header/footer/field/unknown: hidden (no visual output)
+ *   (sectionProperty gap is handled by hwpx-section-break CSS on the paragraph)
  */
 
 'use client';
@@ -18,27 +18,11 @@ const visibleTypes: Record<string, typeof Calculator> = {
   drawing: Paintbrush,
 };
 
-/** Types that render as page break */
-const pageBreakTypes = new Set(['sectionProperty']);
-
-/** Types that are completely hidden */
-const hiddenTypes = new Set(['header', 'footer', 'field', 'unknown']);
+/** Types that are completely hidden (sectionProperty gap handled by hwpx-section-break CSS on paragraph) */
+const hiddenTypes = new Set(['header', 'footer', 'field', 'unknown', 'sectionProperty']);
 
 export function OpaqueNodeView({ node, selected }: NodeViewProps) {
   const { elementType, label } = node.attrs;
-
-  // Page break: section property divider
-  if (pageBreakTypes.has(elementType)) {
-    return (
-      <NodeViewWrapper>
-        <div
-          contentEditable={false}
-          className="hwpx-page-break"
-          aria-hidden="true"
-        />
-      </NodeViewWrapper>
-    );
-  }
 
   // Hidden: no visual output at all
   if (hiddenTypes.has(elementType) || !visibleTypes[elementType]) {
