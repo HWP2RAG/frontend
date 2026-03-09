@@ -24,7 +24,7 @@ import Bold from '@tiptap/extension-bold';
 import Italic from '@tiptap/extension-italic';
 import Underline from '@tiptap/extension-underline';
 import Strike from '@tiptap/extension-strike';
-import { TextStyle } from '@tiptap/extension-text-style';
+import { TextStyle, FontSize, Color } from '@tiptap/extension-text-style';
 
 export {
   HwpxDoc,
@@ -65,4 +65,6 @@ export const allHwpxExtensions = [
   Underline,
   Strike,
   TextStyle,
+  FontSize,
+  Color,
 ];
