@@ -18,6 +18,7 @@ import { HwpxInlineOpaque } from './hwpx-inline-opaque';
 import { HwpxCharMeta } from './hwpx-char-meta';
 import { RunMeta } from './run-meta';
 import { HwpxCollaborationCursor } from './hwpx-collaboration-cursor';
+import { PagePagination } from '../plugins/page-pagination';
 
 import Text from '@tiptap/extension-text';
 import Bold from '@tiptap/extension-bold';
@@ -40,6 +41,7 @@ export {
   HwpxCharMeta,
   RunMeta,
   HwpxCollaborationCursor,
+  PagePagination,
 };
 
 /**
@@ -67,4 +69,5 @@ export const allHwpxExtensions = [
   TextStyle,
   FontSize,
   Color,
+  PagePagination,
 ];
