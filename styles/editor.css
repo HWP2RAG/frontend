@@ -119,6 +119,25 @@
     0 3px 6px -3px rgba(0, 0, 0, 0.25);
 }
 
+/* --- Heading visual hierarchy -------------------------------------------- */
+/* styleIDRef 1-9 paragraphs get extra spacing for visual separation */
+
+.ProseMirror p.hwpx-heading {
+  margin: 0.6em 0 0.3em;
+}
+
+.ProseMirror p.hwpx-heading-major {
+  margin: 0.8em 0 0.4em;
+}
+
+/* Paragraphs containing large text (>= 14pt) get breathing room via has() */
+/* This is a progressive enhancement -- works in modern browsers */
+@supports selector(:has(*)) {
+  .ProseMirror p:has(> span[style*="font-size"]:first-child) {
+    margin-top: 0.5em;
+  }
+}
+
 /* --- Opaque block styles ------------------------------------------------- */
 
 .hwpx-opaque-inline {

@@ -55,6 +55,16 @@ export const HwpxParagraph = Node.create({
       classes.push('hwpx-section-break');
     }
 
+    // Heading heuristic: styleIDRef 1-9 are typically heading styles in HWP/HWPX
+    // This adds CSS margin/weight for visual hierarchy (fontSize already on text marks)
+    const styleId = parseInt(String(node.attrs.styleIDRef || '0'), 10);
+    if (styleId >= 1 && styleId <= 9) {
+      classes.push('hwpx-heading');
+      if (styleId <= 3) {
+        classes.push('hwpx-heading-major');
+      }
+    }
+
     const attrs = {
       ...HTMLAttributes,
       'data-hwpx-paragraph': '',
