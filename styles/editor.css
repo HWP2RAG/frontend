@@ -84,6 +84,16 @@
   background: hsl(var(--primary, 222 47% 51%) / 0.1);
 }
 
+/* --- Page break (sectionProperty opaque) --------------------------------- */
+
+.hwpx-page-break {
+  border: none;
+  border-top: 2px dashed hsl(var(--border, 217 19% 27%));
+  margin: 2rem 0;
+  height: 0;
+  page-break-after: always;
+}
+
 /* --- Opaque block styles ------------------------------------------------- */
 
 .hwpx-opaque-inline {
