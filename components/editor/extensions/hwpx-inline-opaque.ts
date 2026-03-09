@@ -33,10 +33,12 @@ export const HwpxInlineOpaque = Node.create({
       'span',
       {
         'data-hwpx-inline-opaque': '',
+        'data-element-type': node.attrs.elementType || 'unknown',
         class: 'hwpx-opaque-inline',
         contenteditable: 'false',
+        title: node.attrs.label || 'Opaque',
       },
-      node.attrs.label || '[Opaque]',
+      // No text content -- CSS handles visual hiding
     ];
   },
 });
