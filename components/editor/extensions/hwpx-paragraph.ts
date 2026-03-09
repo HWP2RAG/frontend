@@ -49,9 +49,16 @@ export const HwpxParagraph = Node.create({
         style.push(`text-indent: ${indentPx}px`);
       }
     }
+    // Section break marker: paragraph contains secPr → add page-break class
+    const classes: string[] = [];
+    if (meta?._hasSecPr) {
+      classes.push('hwpx-section-break');
+    }
+
     const attrs = {
       ...HTMLAttributes,
       'data-hwpx-paragraph': '',
+      ...(classes.length > 0 ? { class: classes.join(' ') } : {}),
       ...(style.length > 0 ? { style: style.join('; ') } : {}),
     };
     return ['p', attrs, 0];
