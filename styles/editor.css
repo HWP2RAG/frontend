@@ -39,7 +39,7 @@
 }
 
 .ProseMirror p {
-  margin: 0.25em 0;
+  margin: 0.1em 0;
 }
 
 /* Paragraph alignment (rendered via inline style from hwpx-paragraph renderHTML) */
@@ -53,18 +53,18 @@
   border-collapse: collapse;
   width: 100%;
   max-width: 100%;
-  margin: 0.5em 0;
-  table-layout: auto;
+  margin: 0.3em 0;
+  table-layout: fixed;
 }
 
 .ProseMirror td,
 .ProseMirror th {
   border: 1px solid #333;
-  padding: 6px 10px;
-  vertical-align: top;
-  min-width: 1em;
+  padding: 2px 4px;
+  vertical-align: middle;
   word-break: break-word;
   overflow-wrap: break-word;
+  font-size: 9pt;
 }
 
 /* Empty cell placeholder */
