@@ -1,126 +1,103 @@
 /**
- * Page pagination via direct DOM manipulation.
+ * Page pagination overlay.
  *
- * Scans ProseMirror block children, measures cumulative heights,
- * and inserts visual gap divs at A4 page boundaries.
+ * Places absolute-positioned page boundary lines on the paper-container,
+ * OUTSIDE ProseMirror's managed DOM (so PM doesn't remove them).
  *
- * A4 content area = 297mm - 20mm top - 20mm bottom = 257mm ≈ 971px @96dpi
+ * A4 content area = 297mm - 20mm top padding - 20mm bottom padding = 257mm
+ * At 96dpi: 257mm ≈ 971px
  */
 
-const A4_CONTENT_HEIGHT_PX = Math.round(257 * 96 / 25.4); // ≈ 971px
-const GAP_CLASS = 'hwpx-page-gap';
+/** A4 content height in px */
+const A4_CONTENT_PX = Math.round(257 * 96 / 25.4); // ≈ 971
 
-/**
- * Initialize page pagination on a container element (e.g., paper-container).
- * Returns a cleanup function.
- */
+const LINE_CLASS = 'hwpx-page-line';
+
 export function initPagePagination(container: HTMLElement): () => void {
   let rafId: number | null = null;
-  let updating = false; // Guard against MutationObserver re-entry
+  const lines: HTMLElement[] = [];
 
-  function findPM(): Element | null {
-    return container.querySelector('.ProseMirror');
+  function getContentHeight(): number {
+    const pm = container.querySelector('.ProseMirror');
+    if (!pm) return 0;
+    return pm.scrollHeight;
   }
 
-  function clearGaps(pm: Element) {
-    const gaps = pm.querySelectorAll(`.${GAP_CLASS}`);
-    gaps.forEach((el) => el.remove());
-  }
-
-  function insertGaps(pm: Element) {
-    const children = Array.from(pm.children) as HTMLElement[];
-    if (children.length === 0) return;
-
-    let cumulativeHeight = 0;
-    let pageNumber = 1;
-    const insertPoints: HTMLElement[] = [];
-
-    for (const child of children) {
-      if (child.classList.contains(GAP_CLASS)) continue;
-
-      const height = child.offsetHeight;
-      if (height === 0) continue;
-
-      // Check forced pageBreak
-      const isForceBreak = child.getAttribute('data-page-break') === '1';
-
-      if (isForceBreak && cumulativeHeight > 0) {
-        insertPoints.push(child);
-        cumulativeHeight = 0;
-        pageNumber++;
-      }
-
-      if (cumulativeHeight + height > A4_CONTENT_HEIGHT_PX && cumulativeHeight > 0) {
-        insertPoints.push(child);
-        cumulativeHeight = height;
-        pageNumber++;
-      } else {
-        cumulativeHeight += height;
-      }
-    }
-
-    for (const el of insertPoints) {
-      const gap = document.createElement('div');
-      gap.className = GAP_CLASS;
-      gap.contentEditable = 'false';
-      gap.setAttribute('aria-hidden', 'true');
-      el.parentNode?.insertBefore(gap, el);
-    }
-  }
-
-  function recalculate() {
-    const pm = findPM();
-    if (!pm) return;
-
-    // Guard: prevent MutationObserver re-entry
-    updating = true;
-    clearGaps(pm);
-    insertGaps(pm);
-    updating = false;
-  }
-
-  function scheduleUpdate() {
-    if (updating) return; // Skip if we're the ones modifying
-    if (rafId) cancelAnimationFrame(rafId);
-    rafId = requestAnimationFrame(() => {
-      rafId = null;
-      recalculate();
-    });
-  }
-
-  // MutationObserver for content changes
-  const mutObserver = new MutationObserver(() => {
-    if (!updating) scheduleUpdate();
-  });
-
-  // ResizeObserver for layout changes
-  const resizeObserver = new ResizeObserver(() => {
-    if (!updating) scheduleUpdate();
-  });
-
-  // Wait for ProseMirror to mount, then start observing
-  function tryInit() {
-    const pm = findPM();
-    if (!pm) {
-      // Retry until ProseMirror mounts
-      setTimeout(tryInit, 500);
+  function update() {
+    const contentHeight = getContentHeight();
+    if (contentHeight <= A4_CONTENT_PX) {
+      // Single page — remove all lines
+      for (const l of lines) l.remove();
+      lines.length = 0;
       return;
     }
 
-    mutObserver.observe(pm, { childList: true, subtree: true, characterData: true });
+    // Calculate how many page breaks we need
+    const pageCount = Math.ceil(contentHeight / A4_CONTENT_PX);
+    const neededLines = pageCount - 1;
+
+    // Reuse or create line elements
+    while (lines.length > neededLines) {
+      lines.pop()!.remove();
+    }
+    while (lines.length < neededLines) {
+      const line = document.createElement('div');
+      line.className = LINE_CLASS;
+      line.setAttribute('aria-hidden', 'true');
+      container.appendChild(line);
+      lines.push(line);
+    }
+
+    // Position each line
+    // paper-container padding-top is 20mm ≈ 75.6px
+    const paddingTopPx = 20 * 96 / 25.4; // ≈ 75.6
+    for (let i = 0; i < neededLines; i++) {
+      const topPx = paddingTopPx + A4_CONTENT_PX * (i + 1);
+      lines[i].style.top = `${Math.round(topPx)}px`;
+      lines[i].setAttribute('data-page', `${i + 2}`);
+    }
+  }
+
+  function scheduleUpdate() {
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      update();
+    });
+  }
+
+  // Wait for ProseMirror to mount
+  function tryInit() {
+    const pm = container.querySelector('.ProseMirror');
+    if (!pm) {
+      setTimeout(tryInit, 300);
+      return;
+    }
+
+    // Observe size changes on the ProseMirror element
+    const resizeObserver = new ResizeObserver(() => scheduleUpdate());
     resizeObserver.observe(pm);
 
-    // Initial calculation
-    setTimeout(recalculate, 300);
+    // Also observe child changes (content edits)
+    const mutObserver = new MutationObserver(() => scheduleUpdate());
+    mutObserver.observe(pm, { childList: true, subtree: true, characterData: true });
+
+    // Initial
+    scheduleUpdate();
+
+    // Store for cleanup
+    (container as any).__pgCleanup = () => {
+      resizeObserver.disconnect();
+      mutObserver.disconnect();
+    };
   }
 
   tryInit();
 
   return () => {
     if (rafId) cancelAnimationFrame(rafId);
-    mutObserver.disconnect();
-    resizeObserver.disconnect();
-    const pm = findPM();
-    if (pm) clearGaps(pm);
+    for (const l of lines) l.remove();
+    lines.length = 0;
+    (container as any).__pgCleanup?.();
   };
 }
